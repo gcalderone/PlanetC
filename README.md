@@ -9,4 +9,4 @@ We plan to deploy new releases of **PlanetC** within a few weeks after each Stel
 
 **PlanetC** has been developed in close collaboration with [Star Freedom](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in several schools of south Italy.  The Star freedom  operators successfully employed **PlanetC** as main planetarium software in many hundreds shows performed within their travelling planetarium.
 
-**PlanetC** is free software you can redistribute it and/or modify it under the terms of the GPL (see the COPYING file for more details).
+**PlanetC** is free software: you can redistribute it and/or modify it under the terms of the GPL (see the LICENSE file for more details).
