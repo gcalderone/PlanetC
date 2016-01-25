@@ -1,6 +1,8 @@
 # PlanetC
 *A user interface for Stellarium, specifically designed for planetarium control.*
 
+** WORK IN PROGRESS: THE PlanetC REPOSITORY IS UNDER CONSTRUCTION **
+
 Planetarium Control, or **PlanetC** for short, is a friendly and powerful user interface which allows easy control of all [Stellarium](http://stellarium.org/) functionalities, and provides a few more features.  Its main purpose is to be used in planetarium systems, but it's also well suited to work in any situation you wish to easily control Stellarium.
 
 A preliminary documentation can be found in the [wiki pages](https://github.com/gcalderone/PlanetC/wiki).
