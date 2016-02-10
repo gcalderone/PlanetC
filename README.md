@@ -22,11 +22,9 @@ Planetarium Control, or **PlanetC** for short, allows easy control of almost all
 
 All **PlanetC** operations are performed in its own window, without influencing the main Stellarium view, allowing the operators to properly control Stellarium while the audience focuses on the sky simulation.
 
-
 **PlanetC** is developed as an independent Stellarium plugin, however it requires a few tweaks in the original  code to work properly.  Hence we provide both the Stellarium modified code and the plugin code in a single package.  We tried to kept the modifications to the original Stellarium code as small as possible, in order to closely follow each Stellarium release.  Currently, we are able to deploy a new **PlanetC** version a few hours after each Stellarium release.
 
 **PlanetC** has the same dependencies and compilation procedure of Stellarium: once you are able to compile the original Stellarium code, you can compile **PlanetC** without any additional effort.
-
 
 **PlanetC** has been developed in close collaboration with [Star Freedom](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in several schools of south Italy.  The Star Freedom operators successfully employed **PlanetC** as main control software in many hundreds shows performed within their travelling planetarium.
 
