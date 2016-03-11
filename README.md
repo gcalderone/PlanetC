@@ -12,7 +12,9 @@
 |___________________________________________________|
 ```
 
-Planetarium Control, or **PlanetC** for short, allows easy control of (almost) all [Stellarium](http://stellarium.org/) functionalities through a powerful and intuituive graphical user interface.  Its main purpose is to help lecturers and operators to show astronomical phenomena using the Stellarium simulation software, using either a screen projector or a planetarium dome.
+**The first public release of PlanetC is scheduled for March 13th, 2016**
+
+Planetarium Control, or **PlanetC** for short, allows easy control of (almost) all [Stellarium](http://stellarium.org/) functionalities through a powerful and intuitive graphical user interface.  Its main purpose is to help lecturers and operators to show astronomical phenomena using the Stellarium simulation software, using either a screen projector or a planetarium dome.
 
 The documentation on **PlanetC** can be found in the [wiki pages](https://github.com/gcalderone/PlanetC/wiki).
 
