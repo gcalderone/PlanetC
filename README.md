@@ -31,9 +31,9 @@ A preliminary documentation on **PlanetC** can be found in the [wiki pages](http
 - customized date, time, location and cardinal points display, specifically designed for use in planetarium dome;
 - ability to clone and rotate movies and images, to be displayed as twin pictures in planetarium domes;
 
-All **PlanetC** operations are performed in its [own window](The-PlanetC-window), without influencing the main Stellarium view, allowing the operators to properly control Stellarium while the audience focuses on the sky simulation.
+All **PlanetC** operations are performed in its own window, without influencing the main Stellarium view, allowing the operators to properly control Stellarium while the audience focuses on the sky simulation.
 
-**PlanetC** currently relies on a modified version of the original Stellarium code, and has the same dependencies and compilation procedure of Stellarium: once you are able to compile the original Stellarium code, you can [compile **PlanetC**](Installation-and-usage) without any additional effort.
+**PlanetC** currently relies on a modified version of the original Stellarium code, and has the same dependencies and compilation procedure of Stellarium: once you are able to compile the original Stellarium code, you can compile **PlanetC** without any additional effort.
 
 **PlanetC** has been developed by the [Star Freedom association](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in south Italy.  The Star Freedom operators successfully employed **PlanetC** as main control software in many hundreds shows performed within their planetarium.
 
