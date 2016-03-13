@@ -37,7 +37,7 @@ All **PlanetC** operations are performed in its own window, without influencing 
 
 **PlanetC** currently relies on a modified version of the original Stellarium code, and has the same dependencies and compilation procedure of Stellarium: once you are able to compile the original Stellarium code, you can compile **PlanetC** without any additional effort.
 
-**PlanetC** has been developed by [Star Freedom](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in south Italy.  The Star Freedom operators successfully employed **PlanetC** as main control software in many hundreds shows performed within their planetarium.
+**PlanetC** has been developed by [Star Freedom](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in south Italy.
 
 **PlanetC** is free software: you can redistribute it and/or modify it under the terms of the GPL (see the LICENSE file for more details).
 
