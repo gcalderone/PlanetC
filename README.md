@@ -41,4 +41,4 @@ All **PlanetC** operations are performed in its own window, without influencing 
 
 **PlanetC** is free software: you can redistribute it and/or modify it under the terms of the GPL (see the LICENSE file for more details).
 
-If you like **PlanetC**, and wishes to support its development, please consider making a [donation at Giorgio Calderone](https://paypal.me/planetc).  Also please star our repository on Github! ;-)
+If you like **PlanetC**, and wish to support its development, please consider making a [donation to Giorgio Calderone](https://paypal.me/planetc).  Also please star our repository on Github! ;-)
