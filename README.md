@@ -40,3 +40,5 @@ All **PlanetC** operations are performed in its own window, without influencing 
 **PlanetC** has been developed by [Star Freedom](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in south Italy.  The Star Freedom operators successfully employed **PlanetC** as main control software in many hundreds shows performed within their planetarium.
 
 **PlanetC** is free software: you can redistribute it and/or modify it under the terms of the GPL (see the LICENSE file for more details).
+
+If you like **PlanetC**, and wishes to support its development, please consider making a [donation at Giorgio Calderone](https://paypal.me/planetc).  Also please star our repository on Github! ;-)
