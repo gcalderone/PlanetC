@@ -12,8 +12,6 @@
 |___________________________________________________|
 ```
 
-**The first public release of PlanetC is scheduled for March 13th, 2016**
-
 Planetarium Control, or **PlanetC** for short, allows easy control of (almost) all [Stellarium](http://stellarium.org/) functionalities through a powerful and intuitive graphical user interface.  Its main purpose is to help lecturers and operators to show astronomical phenomena using the Stellarium simulation software, using either a screen projector or a planetarium dome.
 
 The documentation on **PlanetC** can be found in the [wiki pages](https://github.com/gcalderone/PlanetC/wiki).
@@ -39,7 +37,7 @@ All **PlanetC** operations are performed in its own window, without influencing 
 
 **PlanetC** has been developed by [Star Freedom](http://www.starfreedom.it/), a non-profit association involved in science lecturing and astronomy activities in south Italy.
 
-**PlanetC** is free software: you can redistribute it and/or modify it under the terms of the GPL (see the LICENSE file for more details).
+**PlanetC** is free software: you can redistribute it and/or modify it under the terms of the GPL (see the COPYING file for more details).
 
 If you like **PlanetC**, and wish to support its development, please consider making a [donation to Giorgio Calderone](https://paypal.me/planetc).  Also please star our repository on Github! ;-)
 
