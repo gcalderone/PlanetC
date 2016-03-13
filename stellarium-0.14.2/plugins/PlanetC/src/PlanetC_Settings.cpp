@@ -132,7 +132,9 @@ PlanetC_Settings::PlanetC_Settings(QWidget* parent) :
 	newHtml += " and the <a href=\"http://www.starfreedom.it/\">Star Freedom</a> association.";
 	newHtml += " More info at:<br>";
 	newHtml += " -- <a href=\"https://github.com/gcalderone/PlanetC/wiki\">PlanetC Wiki</a><br>";
-	newHtml += " -- <a href=\"https://github.com/gcalderone/PlanetC\">Source code</a><br><br>";
+	newHtml += " -- <a href=\"https://github.com/gcalderone/PlanetC\">Source code</a><br>";
+	newHtml += " -- <a href=\"http://www.starfreedom.it/software_planetc/\">Star Freedom</a><br><br>";
+	newHtml += "For info write at <a href=\"mailto:planetc.info@gmail.com\">planetc.info@gmail.com</a><br><br>";
 	newHtml += "This PlanetC version is based on <a href=\"http://stellarium.org/\">Stellarium</a> v" + StelUtils::getApplicationVersion() + "<br>";
 	newHtml += "</h4>";
 	newHtml += "<h3>Copyright &copy; 2016 Giorgio Calderone</h3>";
