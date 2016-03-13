@@ -1,0 +1,498 @@
+
+QLabel {
+    color: rgb(130, 180, 180);
+    font-size: 14px;
+    background: none;
+}
+
+
+QFrame#TitleBar {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgb(81, 47, 50), stop:1 rgb(31, 33, 36));
+    padding: 5pxs;
+}
+
+QLabel#stelWindowTitle,
+QLabel#labelState,
+QLabel#labelMisc,
+QLabel#labelFPS,
+QLabel#labelTimer {
+    margin-left: 10px;
+    font-size: 14px;
+    color: rgb(194, 194, 195);
+    font: bold;
+    background: none;
+}
+
+
+QWidget#PlanetC_Settings_Form {
+    border-width: 6px;
+    border-style: ridge;
+    border-color:rgb(120, 20, 30);
+    border-radius: 10pxs;
+}
+
+
+
+QWidget {
+    background: rgb(0, 0, 0);
+    selection-background-color: rgb(253, 216, 134);
+    selection-color: rgb(3, 3, 3);
+}
+
+QFrame#frmSeparator0,
+QFrame#frmSeparator1,
+QFrame#frmSeparator2,  
+QFrame#frmSeparator3  {
+    border-width: 4pxs; /* TODO*/
+    background-color: rgb(70, 70, 70);
+}
+
+
+QFrame {
+    background: none;
+    border: none;
+}
+
+
+
+
+
+
+/*** QPushButton ***/
+QPushButton {
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: rgb(250, 0, 0);
+    font-size: 13px;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(60, 60, 60), stop: 1 rgb(20, 20, 20));
+}
+
+
+QPushButton:open {
+   border: 2pxs solid red;
+   color: rgb(200, 100, 0);
+}
+
+
+QPushButton:hover {
+   background-color: rgb(60,60,60);
+}
+
+QPushButton::Disabled {
+    background-color: rgb(10, 10, 10);
+    color: rgb(80, 80, 80);
+}
+
+QPushButton:flat {
+    border: none; /* no border for a flat push button */
+    background: transparent;
+}
+
+QPushButton#closeStelWindow {
+    border: 0px;
+    background: none;
+    background-image: url(:/graphicGui/closeButton.png);
+}
+
+QPushButton:hover#closeStelWindow {
+    background-image: url(:/graphicGui/closeButton-hover.png);
+}
+
+
+
+
+/*** Scrollbars ***/
+
+QAbstractScrollArea::corner {
+    background-color: rgb(10, 10, 10);
+}
+
+
+QScrollBar:vertical,
+QScrollBar:horizontal {
+    border: 0px solid;
+    background: rgb(50, 50, 50);
+}
+
+QScrollBar:vertical {
+    width: 11pxs;
+    margin: 20pxs 0pxs 20pxs 0pxs;
+}
+
+QScrollBar:horizontal {
+    height: 16pxs;
+    margin: 0pxs 20pxs 0pxs 20pxs;
+}
+
+
+
+QScrollBar::handle:vertical, 
+QScrollBar::handle:horizontal {
+    border: 0px;
+    border-radius: 4px;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(100, 30, 0), stop: 1 rgb(130, 120, 40));
+}
+
+QScrollBar::handle:vertical { 
+    min-height: 20pxs;
+}
+
+QScrollBar::handle:horizontal {
+    min-width: 20pxs;
+}
+
+
+
+QScrollBar::add-line:vertical {
+    border: 0px solid;
+    height: 20pxs;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical {
+    border: 0px solid;
+    height: 20pxs;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::up-arrow {
+    subcontrol-origin: padding;
+    subcontrol-position: top; /* position at the top right corner */
+    width: 16pxs;
+    height: 20px;
+    image: url(:/graphicGui/spinup.png);
+    background: rgb(34, 34, 35);
+}
+
+QScrollBar::down-arrow {
+    subcontrol-origin: padding;
+    subcontrol-position: bottom; /* position at the bottom right corner */
+    width: 16pxs;
+    height: 20pxs;
+    image: url(:/graphicGui/spindown.png);
+    background: rgb(34, 34, 35);
+}
+
+
+
+QScrollBar::add-line:horizontal {
+    border: 0px solid;
+    width: 20pxs;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal {
+    border: 0px solid;
+    width: 20pxs;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::right-arrow {
+    subcontrol-origin: padding;
+    subcontrol-position: left; /* position at the top right corner */
+    height: 16pxs;
+    width: 20pxs;
+    image: url(:/graphicGui/spinleft.png);
+    background: rgb(34, 34, 35);
+}
+
+QScrollBar::left-arrow {
+    subcontrol-origin: padding;
+    subcontrol-position: right; /* position at the bottom right corner */
+    height: 16pxs;
+    width: 20pxs;
+    image: url(:/graphicGui/spinright.png);
+    background: rgb(34, 34, 35);
+}
+
+
+
+
+/*** QSlider ***/
+QSlider {
+    background: none;
+}
+
+QSlider::groove:horizontal {
+    border: none;
+    height: 10pxs; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(0, 0, 0), stop: 1 rgb(100, 50, 50));
+    margin: 0;
+}
+
+QSlider::handle:horizontal {
+    border: 1px solid rgb(0, 0, 0);
+    width: 24pxs;
+    margin: -5pxs 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    color: rgb(31, 31, 31);
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(183, 140, 85), stop: 1 rgb(111, 113, 114));
+    background-color: rgb(180, 140, 80);
+}
+
+
+
+/*** QGroupBox ***/
+
+QGroupBox {
+    padding: 0px;
+    padding-top: 18px;
+    background-color:  qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(0, 0, 0), stop: 1 rgb(40, 40, 40));
+    border: 0px solid rgba(0, 0, 0, 10%);
+    border-style: inset;
+    font-weight: bold;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+QGroupBox::title {
+    subcontrol-position: top left;
+    subcontrol-origin: margin;
+    color: rgb(150, 80, 0);
+    left: 10pxs;
+    top: 6pxs;
+}
+
+
+
+
+
+/*** QTabBar ***/
+
+QTabWidget::pane {
+    border-top: 2px solid rgb(200, 120, 0);
+    margin-left:  -5pxs;
+    margin-right: -5pxs;
+}
+
+
+QTabWidget::tab-bar {
+   /* width: 1000px;
+   Used as a workaround to set the background of
+   the space between the last tab (normally the rightmost one
+   and the end of the window. Not necessary if
+   QTabWidget::documentMode is set to 'true',
+   but that solution leads to a hard-coded line
+   below the tab bar.*/
+}
+
+QTabBar {
+    margin: 0px;
+    padding: 0px;
+    font-weight: bold;
+    color: rgb(150, 150, 150);
+    font-size: 14px;
+/* Don't put font-size in QTabBar::tab, as it causes the tab
+   labels to be cut by the frame. */
+}
+
+QTabBar::tab {
+    border: none;
+    margin: 0px;
+    padding: 1ex 1ex;
+    min-height: 18px;
+    background-color: rgb(31, 31, 31);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+QTabBar::tab:selected {
+    color: rgb(200, 120, 0);
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(30, 30, 30), stop: 1 rgb(80, 80, 80));
+}
+
+
+
+
+
+/*** QListView ***/
+
+QListView {
+    font-size: 14px;
+    color: rgb(170, 173, 164);
+    background: rgb(31, 31, 31);
+    show-decoration-selected: 1;
+    border: none;
+}
+
+QListView::item {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+QListView::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(150, 80, 0), stop: 1 rgb(210, 200, 100));
+}
+
+
+
+
+
+/*** QCheckBox ***/
+
+QCheckBox {
+    color: rgb(250, 0, 0);
+    background: none;
+    font-size: 14px;
+}
+
+QCheckBox:disabled {
+    color: rgb(50, 50, 50);
+}
+
+QCheckBox::indicator {
+    width: 15pxs;
+    height: 15pxs;
+    margin: 0px;
+}
+
+QCheckBox::indicator:checked {
+    color: rgb(250, 200, 0);
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(30, 30, 30), stop: 1 rgb(140, 100, 100));
+    border-radius: 3px;
+}
+
+
+
+/*** QRadioBUtton ***/
+
+QRadioButton {
+    color: rgb(250, 0, 0);
+    background: none;
+    font-size: 14px;
+}
+
+QRadioButton::indicator {
+    width: 14pxs;
+    height: 14pxs;
+    margin-left: 3px;
+}
+
+QRadioButton::indicator:checked {
+    color: rgb(250, 200, 0);
+}
+
+QRadioButton::indicator:unchecked {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(30, 30, 30), stop: 1 rgb(140, 100, 100));
+    border-radius: 6px;
+}
+
+
+
+
+QLineEdit, QSpinBox, QDoubleSpinBox {
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 0px;
+    padding: 0 8px;
+    background: rgb(30, 30, 31);
+    selection-background-color: rgb(253, 216, 134);
+    color: rgb(170, 0, 0);
+    font-size: 12px;
+}
+
+
+QSpinBox::up-button,QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 20px;
+    border: 1px solid rgba(0, 0, 0, 0%);
+    border-top: 1px solid rgb(0, 0, 0);
+    border-right: 1px solid rgb(0, 0, 0);
+    image: url(:/graphicGui/spinup.png);
+}
+
+QSpinBox::down-button,QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 20px;
+    border: 1px solid rgba(0, 0, 0, 0%);
+    border-right: 1px solid rgb(0, 0, 0);
+    border-bottom: 1px solid rgb(0, 0, 0);
+    image: url(:/graphicGui/spindown.png);
+}
+
+
+
+
+QTextEdit {
+    color: rgb(200, 200, 200);  
+    background: rgb(20, 20, 20);
+}
+
+
+
+
+
+
+
+
+/***   DateDialog Form (copied from Stellarium ***/
+
+#dateTimeDialogForm #dateTimeBox QFrame {
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 rgb(30, 30, 30), stop: 1 rgb(80, 80, 80));
+    border: none;
+}
+
+#dateTimeDialogForm #dateTimeBox QLabel {
+    padding: 0;
+    margin: 0;
+    font-size: 20px;
+    text-align: left;
+    background: none;
+}
+
+#dateTimeDialogForm QSpinBox, #dateTimeDialogForm QDoubleSpinBox {
+    border-image: none;
+    border: 0px;
+    background: rgba(0, 0, 0, 0%);
+    padding-top: 13px;
+    padding-bottom: 13px;
+    font-size: 16px;
+    text-align: center;
+    padding-left: 0px;
+    padding-right: 0px;
+    color: rgb(250, 0, 0);
+}
+
+#dateTimeDialogForm QSpinBox::up-button, #dateTimeDialogForm QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top center;
+    margin: 0;
+    width: 10px;
+    border: none;
+    background: none;
+    image: none;
+}
+
+#dateTimeDialogForm QSpinBox::up-arrow, #dateTimeDialogForm QDoubleSpinBox::up-arrow {
+    image: url(:/graphicGui/spinup.png);
+    subcontrol-origin: border;
+    subcontrol-position: bottom center;
+    padding-bottom: 16px;
+}
+
+#dateTimeDialogForm QSpinBox::down-button, #dateTimeDialogForm QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom center;
+    margin: 0;
+    border: none;
+    width: 10px;
+    background: none;
+    image: none;
+}
+
+#dateTimeDialogForm QSpinBox::down-arrow, #dateTimeDialogForm QDoubleSpinBox::down-arrow {
+    image: url(:/graphicGui/spindown.png);
+    subcontrol-origin: border;
+    subcontrol-position: top center;
+    padding-top: 16px;
+}

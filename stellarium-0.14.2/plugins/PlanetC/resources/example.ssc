@@ -1,0 +1,45 @@
+//Prepare the state
+var state = planetc_get_state();
+state.atmo      = 1; 
+state.cardpo    = 0;
+state.fog       = 1;
+state.landscape = 1;
+state.date      = "2016-02-22T12:00:00";
+planetc_set_state( state );
+core.pauseScript();
+
+//Select Jupiter
+core.selectObjectByName("Jupiter", true);
+info = core.getSelectedObjectInfo();
+
+//Move forward in time until object is visible
+while (info.altitude < 30) {
+    core.setTimeRate(10000);
+    info = core.getSelectedObjectInfo();
+    core.wait(0.5);
+}
+core.setTimeRate(0);
+core.pauseScript();
+
+//Auto zoom in and switch off atmosphere and landscape
+planetc_AutoZoomIn(4, 6)
+core.wait(2);
+LandscapeMgr.setFlagLandscape      (false);
+LandscapeMgr.setFlagFog            (false);
+LandscapeMgr.setFlagAtmosphere     (false);
+LandscapeMgr.setFlagCardinalsPoints(false);
+core.pauseScript();
+
+//Show Jupiter and satellites rotation
+core.setTimeRate(10000);
+core.pauseScript();
+
+//Stop time and zoom out
+core.setTimeRate(0);
+planetc_AutoZoomOut(4, 6)
+LandscapeMgr.setFlagLandscape (true);
+LandscapeMgr.setFlagFog       (true);
+LandscapeMgr.setFlagAtmosphere(true);
+core.pauseScript();
+core.debug(""); //core.pauseScript must not be the last statement, hence we add a dummy log.
+

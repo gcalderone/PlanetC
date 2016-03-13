@@ -1,0 +1,67 @@
+env:
+  global:
+   - secure: "nDBuoowqSmcjCOsK4uXfkRRGuvcLt434lXeZIND/bfOEDgOv7h62w5h4i3ebSgItWkBStLzGB8Owfb2v/S0jC+wSIoP+SD2wRg12LA0/eeb3OBYw/TR5FlCVx21/GzvODTNi8NdWb92AcYGhbLNPqMDIFHGscARjHiP2EnONhTs="
+
+addons:
+  coverity_scan:
+    project:
+      name: "Stellarium/stellarium"
+      description: "A realistic, real-time 3D simulation of the night sky."
+    notification_email: mcardinot@gmail.com
+    build_command_prepend: cmake ../.
+    build_command: make -j 2
+    branch_pattern: master
+
+language: cpp
+
+compiler:
+  - gcc
+
+before_install:
+  - "wget -q -O libarchive-3.1.2.tar.gz http://sourceforge.net/projects/cardinot/files/util/libarchive-3.1.2.tar.gz/download"
+  - "tar -xzvf libarchive-3.1.2.tar.gz"
+
+  - "wget -q -O cmake-3.1.3.tar.gz http://sourceforge.net/projects/cardinot/files/util/cmake-3.1.3.tar.gz/download"
+  - "tar -xzvf cmake-3.1.3.tar.gz"
+
+  - "mkdir qt5"
+  - "wget -q -O qt5.zip http://sourceforge.net/projects/cardinot/files/util/qt541.zip/download"
+  - "unzip -qq qt5.zip -d qt5"
+  - "export PATH=`pwd`/qt5/bin:$PATH"
+  - "export QT_PLUGIN_PATH=`pwd`/qt5/plugins"
+
+install:
+  - "cd libarchive-3.1.2"
+  - "./configure --prefix=/usr --disable-static"
+  - "make -j 2"
+  - "sudo make install -j 2"
+  - "cd .."
+
+  - "cd cmake-3.1.3"
+  - "./bootstrap"
+  - "make -j 2"
+  - "sudo make install -j 2"
+  - "cd .."
+
+before_script:
+  - "mkdir build"
+  - "cd build"
+
+script:
+  - "cmake ../."
+  - "make -j 2"
+  - "sudo make install -j 2"
+
+notifications:
+  recipients:
+    - mcardinot@gmail.com
+  email:
+    on_success: change
+    on_failure: always
+  irc:
+    channels:
+      - "irc.freenode.net#stellarium"
+    template:
+      - "Stellarium/trunk #%{build_number} (%{author}): %{message}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"

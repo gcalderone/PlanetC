@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/MeteorShowers">
+        <file>showers.json</file>
+        <file>radiant.png</file>
+        <file>btMS-off.png</file>
+        <file>btMS-on.png</file>
+        <file>btMS-search-on.png</file>
+        <file>btMS-search-off.png</file>
+    </qresource>
+</RCC>

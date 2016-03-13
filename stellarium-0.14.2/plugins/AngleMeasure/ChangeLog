@@ -1,0 +1,33 @@
+0.3.2 [2014-08-14]
+Added horizontal mode (no refraction)
+
+0.3.1
+Undocumented change
+
+0.3.0
+Added GUI
+Added calculation of position angle
+
+0.2.3
+Remove stale cmake dependency of Freetype2
+Use new rendering engine of core
+Use editable keybindings
+
+0.2.2
+Support night vision mode
+
+0.2.1
+Fixed reading from the wrong place in the configuration file (LP: #954205)
+
+0.2.0 [2012-01-30]
+Support translation of strings
+
+0.0.2 [2008-10-12]
+Support for DMS and symbolic display formats
+
+0.0.1 [2008-10-11]
+Fix windows build
+
+0.0.0 [2008-06-24]
+Created basic plugin
+
