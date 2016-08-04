@@ -15,7 +15,8 @@ QLabel#stelWindowTitle,
 QLabel#labelState,
 QLabel#labelMisc,
 QLabel#labelFPS,
-QLabel#labelTimer {
+QLabel#labelTimer,
+QLabel#labelClock {
     margin-left: 10px;
     font-size: 14px;
     color: rgb(194, 194, 195);
@@ -42,7 +43,8 @@ QWidget {
 QFrame#frmSeparator0,
 QFrame#frmSeparator1,
 QFrame#frmSeparator2,  
-QFrame#frmSeparator3  {
+QFrame#frmSeparator3,
+QFrame#frmSeparator4  {
     border-width: 4pxs; /* TODO*/
     background-color: rgb(70, 70, 70);
 }

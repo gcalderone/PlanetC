@@ -646,6 +646,9 @@ void PlanetC_UI::update()
 	ui->labelTimer->setText("Timer: " + watch.elapsedTime());
 	ui->btnTimerToggle->setText(watch.isRunning()   ?   "Pause"   :   "Go");
 
+	//Update clock
+	ui->labelClock->setText("Clock: " + QDateTime::currentDateTime().toString("hh:mm:ss"));
+
 
 	//Update DateTimeDialog
 	double jday = stel.core->getJD();
@@ -693,19 +696,26 @@ void PlanetC_UI::update()
 
 
 	//Display object info
+	stel.objmgr->setFlagSelectedObjectPointer( ui->chkShowMarker->isChecked() );
 	const QList<StelObjectP>& selected = stel.objmgr->getSelectedObject();
 	if(selected.isEmpty())
 	{
 		ui->txtObjInfo->setHtml("");
 		currentObjInfo = "";
-		ui->labelVisibility->setText("No Object selected");
-		ui->labelVisibility->setStyleSheet("color : rgb(130, 180, 180); font: bold;");
+		ui->chkShowMarker->setEnabled(false);
+		ui->labelSelectedObject->setText("none");
+		ui->labelSelectedObject->setStyleSheet("font: bold;");
+		ui->labelVisibility->setText("");
 	}
 	else
 	{
+		ui->chkShowMarker->setEnabled(true);
 		QString s = selected[0]->getInfoString(stel.core, StelObject::InfoStringGroup(StelObject::AllInfo));
 		if(s != currentObjInfo)
 		{
+			ui->labelSelectedObject->setText( selected[0]->getNameI18n() + " (" + selected[0]->getType() + ")");
+			ui->labelSelectedObject->setStyleSheet("font: bold;");
+
 			currentObjInfo = s;
 			//During daylight the font color is black against a dark background. Change color to white.
 			if(stel.core->isBrightDaylight()   &&
@@ -718,17 +728,17 @@ void PlanetC_UI::update()
 			if(alt > 10)
 			{
 				ui->labelVisibility->setText("Object is above the horizon");
-				ui->labelVisibility->setStyleSheet("color : rgb(130, 180, 180); font: bold;");
+				ui->labelVisibility->setStyleSheet("color : rgb(130, 180, 180);");
 			}
 			else if(alt > 0)
 			{
 				ui->labelVisibility->setText("Object is close to the horizon");
-				ui->labelVisibility->setStyleSheet("color : rgb(150, 150, 0); font: bold;");
+				ui->labelVisibility->setStyleSheet("color : rgb(150, 150, 0);");
 			}
 			else
 			{
 				ui->labelVisibility->setText("Object is not visible");
-				ui->labelVisibility->setStyleSheet("color : rgb(150, 0, 0); font: bold;");
+				ui->labelVisibility->setStyleSheet("color : rgb(150, 0, 0);");
 			}
 		}
 	}

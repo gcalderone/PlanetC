@@ -36,34 +36,34 @@
 
 
 //PLANETC_GC
-class PlanetC_QGLWidget : public QGLWidget {
-        Q_OBJECT
+class PlanetC_QGLWidget : public QGLWidget
+{
+	Q_OBJECT
 
 public:
-        PlanetC_QGLWidget(class PlanetC_UI*, QWidget*, QGLWidget*);
-        ~PlanetC_QGLWidget() {}
+	PlanetC_QGLWidget(class PlanetC_UI*, QWidget*, QGLWidget*);
+	~PlanetC_QGLWidget() {}
 
-        void updateFBO(QOpenGLFramebufferObject* cloneFBO);
+	void updateFBO(QOpenGLFramebufferObject* cloneFBO);
 
 protected slots:
-        void mouseMoveEvent(QMouseEvent* event);
-        void leaveEvent(QEvent* event);
-        void mouseReleaseEvent(QMouseEvent* event);
+	void mouseMoveEvent(QMouseEvent* event);
+	void leaveEvent(QEvent* event);
+	void mouseReleaseEvent(QMouseEvent* event);
 
 
 protected:
-        virtual void initializeGL();
-        void resizeGL(int width, int height);
-        void paintGL();
+	virtual void initializeGL();
+	void resizeGL(int width, int height);
+	void paintGL();
 
 private:
-        class PlanetC_UI* UI;
-        bool firstResize;
-        QOpenGLFramebufferObject* cloneFBO;
+	class PlanetC_UI* UI;
+	bool firstResize;
+	QOpenGLFramebufferObject* cloneFBO;
 
-        QRect from;   //rectangle of main Stellarium view
-        QRect to;     //rectangle of the currently used area of this widget
-
+	QRect from;   //rectangle of main Stellarium view
+	QRect to;     //rectangle of the currently used area of this widget
 };
 
 
@@ -88,24 +88,25 @@ private:
    dialogs.  The title bar is automatically disabled in the
    BarFrame::mousePressEvent() routine.
  */
-class PlanetC_Dialog : public QMainWindow {
-        Q_OBJECT
+class PlanetC_Dialog : public QMainWindow
+{
+	Q_OBJECT
 
 public:
-        PlanetC_Dialog(QWidget* parent) :
-                QMainWindow(parent,
-                            Qt::WindowStaysOnTopHint)
-        {}
+	PlanetC_Dialog(QWidget* parent) :
+		QMainWindow(parent,
+					Qt::WindowStaysOnTopHint)
+	{}
 
-        void showEvent(QShowEvent * event) {
-                //Move the dialog to cover the PlanetC window.
-                move(((QMainWindow*) parent())->geometry().topLeft() + QPoint(50, 50));
+	void showEvent(QShowEvent * event) {
+		//Move the dialog to cover the PlanetC window.
+		move(((QMainWindow*) parent())->geometry().topLeft() + QPoint(50, 50));
 
-                //Set the window as modal otherwise it will go to
-                //background when it looses the focus and  the main
-                //PlanetC window is in fullscreen modality.
-                setWindowModality(Qt::ApplicationModal);
-        }
+		//Set the window as modal otherwise it will go to
+		//background when it looses the focus and  the main
+		//PlanetC window is in fullscreen modality.
+		setWindowModality(Qt::ApplicationModal);
+	}
 };
 
 
@@ -114,71 +115,78 @@ public:
 
 /*
  */
-class PlanetC_Dial : public QDial {
-        Q_OBJECT
+class PlanetC_Dial : public QDial
+{
+	Q_OBJECT
 
 public:
-        PlanetC_Dial(QWidget* parent = NULL) : QDial(parent) {
-	setTracking(false);     //emit signal while being dragged
-	setMouseTracking(true); //receives signals when at least one button is pressed
-	timerShot = 0;
-	reqValue = value();
-	setStyleSheet("background: rgb(30, 20, 20);");
-        }
+	PlanetC_Dial(QWidget* parent = NULL) : QDial(parent) 
+	{
+		setTracking(false);     //emit signal while being dragged
+		setMouseTracking(true); //receives signals only when at least one button is pressed
+		timerShot = 0;
+		reqValue = value();
+		setStyleSheet("background: rgb(30, 20, 20);");
+	}
 
 public slots:
-        void setValue(int v) {
-	//float c = ((float) v - minimum()) / (maximum() - minimum()) * 255.;
-	//if (invertedAppearance()) c = 255 - c;
-	//QString s = "background: rgb(" + 
-	//        QString::number(0.5 * c, 'f', 0) + ", " + 
-	//        QString::number(0.3 * c, 'f', 0) + ", 0);";
-	//setStyleSheet(s);
-	QDial::setValue(v);
-	if (timerShot == 0) {
-	        reqValue = v;
+	void setValue(int v) 
+	{
+		//float c = ((float) v - minimum()) / (maximum() - minimum()) * 255.;
+		//if (invertedAppearance()) c = 255 - c;
+		//QString s = "background: rgb(" +
+		//        QString::number(0.5 * c, 'f', 0) + ", " +
+		//        QString::number(0.3 * c, 'f', 0) + ", 0);";
+		//setStyleSheet(s);
+		QDial::setValue(v);
+		if(timerShot == 0)
+			{
+				reqValue = v;
+			}
 	}
-        }
 
 protected slots:
-        void wheelEvent(QWheelEvent* e)  {
-	if (!isEnabled()) return;
-	e->accept();
+	void wheelEvent(QWheelEvent* e)
+	{
+		if(!isEnabled()) return;
+		e->accept();
 
-	float delta = (e->angleDelta()).y() / 8.;
-	if (invertedControls()) delta *= -1;
-	reqValue += singleStep() * delta;
-	if (reqValue > maximum()) reqValue = maximum();
-	if (reqValue < minimum()) reqValue = minimum();
+		float delta = (e->angleDelta()).y() / 8.;
+		if(invertedControls()) delta *= -1;
+		reqValue += singleStep() * delta;
+		if(reqValue > maximum()) reqValue = maximum();
+		if(reqValue < minimum()) reqValue = minimum();
 
-	timerShot += 1;
-	QTimer::singleShot(1000, this, SLOT(reset()));
-	emit valueChangeRequested( reqValue );
-        }
-        
+		timerShot += 1;
+		QTimer::singleShot(1000, this, SLOT(reset()));
+		emit valueChangeRequested( reqValue );
+	}
 
-        //Reimplement these method to avoid changing value by click and keyboard
-        void mousePressEvent(QMouseEvent* e)   {}
-        void mouseReleaseEvent(QMouseEvent* e) {}
-        void keyPressEvent(QKeyEvent* e)       {}
-        void keyReleaseEvent(QKeyEvent* e)     {}
-        //void mouseMoveEvent(QMouseEvent* e) {}
+
+	//Reimplement these method to avoid changing value by click and keyboard
+	void mousePressEvent(QMouseEvent* e)   {}
+	void mouseReleaseEvent(QMouseEvent* e) {}
+	void keyPressEvent(QKeyEvent* e)       {}
+	void keyReleaseEvent(QKeyEvent* e)     {}
+	//void mouseMoveEvent(QMouseEvent* e) {}
 
 private slots:
-        void reset() {
-	timerShot -= 1;
-	if (timerShot == 0) {
-	        reqValue = value();
-	        clearFocus();
+	void reset()
+	{
+		timerShot -= 1;
+		if(timerShot == 0)
+			{
+				reqValue = value();
+				clearFocus();
+			}
 	}
-        }
 
 private:
-        int reqValue;
-        int timerShot;
+	int reqValue;
+	int timerShot;
 
 signals:
-        void valueChangeRequested(int);
+	void valueChangeRequested(int);
 };
 
 
@@ -188,68 +196,70 @@ signals:
  */
 class PlanetC_sliZoom : public PlanetC_Dial {
 public:
-        PlanetC_sliZoom(QWidget* parent = NULL) : PlanetC_Dial(parent) {
-	setMinimum(100);
-	setMaximum(3e3);
-	setSingleStep(1);
-	setNotchTarget(100);
-        }
+	PlanetC_sliZoom(QWidget* parent = NULL) : PlanetC_Dial(parent)
+	{
+		setMinimum(100);
+		setMaximum(3e3);
+		setSingleStep(1);
+		setNotchTarget(100);
+	}
 
 public:
-        float uvalue(int v) {
-	float vExt = 180. * pow(((float) v) / maximum(), 4.);
-	return vExt;
-        }
+	float uvalue(int v)
+	{
+		float vExt = 180. * pow(((float) v) / maximum(), 4.);
+		return vExt;
+	}
 
-        void setUValue(float v) {
-	float vInt = maximum() * pow(((float) v) / 180., 0.25);
-	setValue(vInt);
-        }
+	void setUValue(float v)
+	{
+		float vInt = maximum() * pow(((float) v) / 180., 0.25);
+		setValue(vInt);
+	}
 };
 
 
 
 /*
  */
-class PlanetC_sliTimeRate : public PlanetC_Dial {
+class PlanetC_sliTimeRate : public PlanetC_Dial
+{
 public:
-        PlanetC_sliTimeRate(QWidget* parent = NULL) : PlanetC_Dial(parent) {
-	//setMinimum(0);
-	//setMaximum(600);
-	//setSingleStep(1);
-	//setNotchTarget(5);
-
-	setMinimum(-600);
-	setMaximum( 600);
-	setSingleStep(10);
-	setNotchTarget(5);
-        }
-
-public:
-        float uvalue(int v) {
-	//float vExt = pow((double) 10., v/100.);
-
-	if (v == 0) return 0;
-	if (abs(v) == 1) return v;
-	float sign = (v > 0  ?  1  : -1.);
-	float vExt = sign * pow((double) 10., abs(v)/100.);
-
-	return vExt;
-        }
-
-        void setUValue(float v) {
-	//float vInt = ( log10(abs(v)) * 100. );
-	//setValue(sign * vInt);
-
-	if (abs(v) < 1) {
-	        setValue(0);
-	        return;
+	PlanetC_sliTimeRate(QWidget* parent = NULL) : PlanetC_Dial(parent) {
+		setMinimum(-600);
+		setMaximum( 600);
+		setSingleStep(10);
+		setNotchTarget(5);
 	}
 
-	float sign = (v > 0  ?  1  : -1.);
-	float vInt = ( log10(abs(v)) * 100. );
-	setValue(sign * vInt);
-        }
+public:
+	float uvalue(int v)
+	{
+		//float vExt = pow((double) 10., v/100.);
+
+		if (v == 0) return 0;
+		if (abs(v) == 1) return v;
+		float sign = (v > 0  ?  1  : -1.);
+		float vExt = sign * pow((double) 10., abs(v)/100.);
+
+		return vExt;
+	}
+
+	void setUValue(float v)
+	{
+		//float vInt = ( log10(abs(v)) * 100. );
+		//setValue(sign * vInt);
+
+		if(abs(v) < 1)
+			{
+				setValue(0);
+				return;
+			}
+
+		float sign = (v > 0  ?  1  : -1.);
+		float vInt = ( log10(abs(v)) * 100. );
+		setValue(sign * vInt);
+	}
 };
 
 #endif // _PLANETC_WIDGETS_HPP_

@@ -10,6 +10,12 @@
 |     A powerful user interface for Stellarium      |
 |___________________________________________________|
 
+PlanetC v0.1.1
+- Added system clock in the top bar;
+- Added check box to show/hide selected object marker;
+- Name of selected object and its visibility is now shown in the right bar
+  (in previous version it was shown only in the "Obj. info" tab.)
+
 PlanetC v0.1.0 (2016-03-13)
 - First PlanetC release under GPL.
   Reference website is https://github.com/gcalderone/PlanetC
