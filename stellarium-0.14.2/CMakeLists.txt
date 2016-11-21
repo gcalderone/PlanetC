@@ -324,8 +324,11 @@ IF(WIN32)
     #######################################################
     ### Generate an Inno Setup project file             ###
     #######################################################
-    ##TODO: how can I get the PlanetC version number automatically?
-    SET(PLANETC_PLUGIN_VERSION "0.1.0")
+
+    ##TODO: The PlanetC plugin version is set in 
+    ##plugins/PlanetC/CMakeLists.txt, how can I get it here
+    ##automatically?
+	SET(PLANETC_PLUGIN_VERSION "0.1.1")
  
     # Try to guess the MinGW /bin directory...
     GET_FILENAME_COMPONENT(MINGW_BIN_DIRECTORY ${CMAKE_CXX_COMPILER} PATH)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
-    <height>649</height>
+    <width>415</width>
+    <height>815</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -186,6 +186,145 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxContent_3">
+     <property name="title">
+      <string>Planetarium</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>7</number>
+      </property>
+      <item>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>Date label shift </string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QDoubleSpinBox" name="spinCardShift">
+          <property name="decimals">
+           <number>2</number>
+          </property>
+          <property name="maximum">
+           <double>0.500000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.050000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_22">
+          <property name="text">
+           <string>Cardinals shift </string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="spinClockFontSize"/>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="spinClockShift">
+          <property name="decimals">
+           <number>2</number>
+          </property>
+          <property name="maximum">
+           <double>0.500000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.050000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="text">
+           <string>Labels font size: </string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSetStartDate">
+        <property name="text">
+         <string>Set current date as start date</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxContent_5">
+     <property name="title">
+      <string>Dome/screen projector</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <property name="spacing">
+       <number>7</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="chkExtProjFullscreen">
+        <property name="toolTip">
+         <string>Show stellarium window in full screen</string>
+        </property>
+        <property name="text">
+         <string>Full resolution and centered</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="2" column="0">
+         <widget class="QSpinBox" name="spinExtProjW">
+          <property name="toolTip">
+           <string>Window width</string>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="spinExtProjY">
+          <property name="toolTip">
+           <string>Window top position</string>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="spinExtProjH">
+          <property name="toolTip">
+           <string>Window height</string>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QSpinBox" name="spinExtProjX">
+          <property name="toolTip">
+           <string>Window left position</string>
+          </property>
+          <property name="maximum">
+           <number>9999</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBoxContent_2">
      <property name="title">
       <string>Misc.</string>
@@ -294,79 +433,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBoxContent_3">
-     <property name="title">
-      <string>Planetarium</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <property name="spacing">
-       <number>7</number>
-      </property>
-      <item>
-       <layout class="QGridLayout" name="gridLayout_6">
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_21">
-          <property name="text">
-           <string>Date label shift </string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QDoubleSpinBox" name="spinCardShift">
-          <property name="decimals">
-           <number>2</number>
-          </property>
-          <property name="maximum">
-           <double>0.500000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.050000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_22">
-          <property name="text">
-           <string>Cardinals shift </string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="spinClockFontSize"/>
-        </item>
-        <item row="1" column="1">
-         <widget class="QDoubleSpinBox" name="spinClockShift">
-          <property name="decimals">
-           <number>2</number>
-          </property>
-          <property name="maximum">
-           <double>0.500000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.050000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_20">
-          <property name="text">
-           <string>Labels font size: </string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnSetStartDate">
-        <property name="text">
-         <string>Set current date as start date</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBoxContent_4">
      <property name="title">
       <string>About</string>
@@ -408,6 +474,23 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>spinClockFontSize</tabstop>
+  <tabstop>spinClockShift</tabstop>
+  <tabstop>spinCardShift</tabstop>
+  <tabstop>btnSetStartDate</tabstop>
+  <tabstop>chkExtProjFullscreen</tabstop>
+  <tabstop>spinExtProjX</tabstop>
+  <tabstop>spinExtProjY</tabstop>
+  <tabstop>spinExtProjW</tabstop>
+  <tabstop>spinExtProjH</tabstop>
+  <tabstop>spinUIScale</tabstop>
+  <tabstop>spinTimeMove</tabstop>
+  <tabstop>spinTimeZoom</tabstop>
+  <tabstop>btnEqMountTrackAppPos</tabstop>
+  <tabstop>btnOpenStyleEditor</tabstop>
+  <tabstop>textAbout</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -12,10 +12,13 @@
 
 PlanetC v0.1.1
 - Added system clock in the top bar;
-- Added check box to show/hide selected object marker;
+- Added check box to show/hide selected object marker in the right bar;
 - Name of selected object and its visibility is now shown in the right bar
   (in previous version it was shown only in the "Obj. info" tab.)
+- Added "Dome/screen projector" section in the PlanetC settings
+  window, to allow precise positioning of the stellarium window in
+  the external dome/screen projector.
 
 PlanetC v0.1.0 (2016-03-13)
-- First PlanetC release under GPL.
-  Reference website is https://github.com/gcalderone/PlanetC
+- First PlanetC release under GPL.  Reference website is
+  https://github.com/gcalderone/PlanetC

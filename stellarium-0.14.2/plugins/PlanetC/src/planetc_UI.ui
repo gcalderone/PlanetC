@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1373</width>
+    <width>1384</width>
     <height>541</height>
    </rect>
   </property>
@@ -174,10 +174,10 @@
            <item row="0" column="3">
             <widget class="QPushButton" name="btnFullScreen">
              <property name="toolTip">
-              <string>Toggle fullscreen for both the Stellarium and PlanetC windows.  Two screens are required.</string>
+              <string>Setup windows to use dome/screen external projector.</string>
              </property>
              <property name="text">
-              <string>Fullscreen</string>
+              <string>Setup ext. proj.</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -338,8 +338,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>424</width>
-           <height>422</height>
+           <width>467</width>
+           <height>485</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -636,8 +636,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>313</width>
-           <height>472</height>
+           <width>298</width>
+           <height>493</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -661,6 +661,9 @@
           </property>
           <item>
            <widget class="QTabWidget" name="tabWidgetRight">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
             <widget class="QWidget" name="tab_2">
              <attribute name="title">
               <string>Select</string>
@@ -958,6 +961,9 @@
               </item>
               <item>
                <widget class="QTabWidget" name="tabWidget4_2">
+                <property name="currentIndex">
+                 <number>2</number>
+                </property>
                 <widget class="QWidget" name="tabScript_2">
                  <attribute name="title">
                   <string>Script</string>
@@ -1948,6 +1954,110 @@
    <header location="global">PlanetC_Widgets.hpp</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>btnSaveState</tabstop>
+  <tabstop>btnRestoreState</tabstop>
+  <tabstop>btnPointer</tabstop>
+  <tabstop>btnMouseKeys</tabstop>
+  <tabstop>btnFullScreen</tabstop>
+  <tabstop>btnTimerToggle</tabstop>
+  <tabstop>btnTimerReset</tabstop>
+  <tabstop>scrollLeft</tabstop>
+  <tabstop>btnTimeNow</tabstop>
+  <tabstop>sliTimeRate</tabstop>
+  <tabstop>btnTimeStop</tabstop>
+  <tabstop>btnTimeRate0</tabstop>
+  <tabstop>btnTimeRate1</tabstop>
+  <tabstop>btnTimeRate2</tabstop>
+  <tabstop>btnTimeRate3</tabstop>
+  <tabstop>btnTimeRate4</tabstop>
+  <tabstop>radioTimeRel1</tabstop>
+  <tabstop>radioTimeRel2</tabstop>
+  <tabstop>radioTimeRel3</tabstop>
+  <tabstop>radioTimeRel4</tabstop>
+  <tabstop>checkSidereal</tabstop>
+  <tabstop>btnTimeRelMinus</tabstop>
+  <tabstop>lineTimeRelAmount</tabstop>
+  <tabstop>btnTimeRelPlus</tabstop>
+  <tabstop>btnInit</tabstop>
+  <tabstop>btnResetView</tabstop>
+  <tabstop>btnShowClock</tabstop>
+  <tabstop>btnShowDate</tabstop>
+  <tabstop>btnShowCard</tabstop>
+  <tabstop>btnShowLoc</tabstop>
+  <tabstop>btnAtmosphere</tabstop>
+  <tabstop>btnCardPoints</tabstop>
+  <tabstop>btnConstel</tabstop>
+  <tabstop>btnConstelNames</tabstop>
+  <tabstop>btnStars</tabstop>
+  <tabstop>btnPlanets</tabstop>
+  <tabstop>btnMeteor</tabstop>
+  <tabstop>btnSatellites</tabstop>
+  <tabstop>btnGridRaDec</tabstop>
+  <tabstop>btnEquatorLine</tabstop>
+  <tabstop>btnGround</tabstop>
+  <tabstop>btnPrecCircles</tabstop>
+  <tabstop>btnConstelArt</tabstop>
+  <tabstop>btnConstelBound</tabstop>
+  <tabstop>btnStarNames</tabstop>
+  <tabstop>btnPlanetNames</tabstop>
+  <tabstop>btnMeteorRadiant</tabstop>
+  <tabstop>btnSatelliteNames</tabstop>
+  <tabstop>btnGridAltAz</tabstop>
+  <tabstop>btnMeridianLine</tabstop>
+  <tabstop>btnFog</tabstop>
+  <tabstop>btnAngle</tabstop>
+  <tabstop>btnNebNames</tabstop>
+  <tabstop>btnSkyImage</tabstop>
+  <tabstop>btnStarTwinkle</tabstop>
+  <tabstop>btnPlanetOrbits</tabstop>
+  <tabstop>btnMeteorIncrRate</tabstop>
+  <tabstop>btnSatelliteTrails</tabstop>
+  <tabstop>btnGridEcliptic</tabstop>
+  <tabstop>btnEclipticLine</tabstop>
+  <tabstop>btnDialogPlanetCOpt</tabstop>
+  <tabstop>btnDialogView</tabstop>
+  <tabstop>btnDialogConfig</tabstop>
+  <tabstop>btnDialogLocation</tabstop>
+  <tabstop>btnScreenshot</tabstop>
+  <tabstop>btnQuit</tabstop>
+  <tabstop>btnSelConstLine</tabstop>
+  <tabstop>chkShowMarker</tabstop>
+  <tabstop>sliZoom</tabstop>
+  <tabstop>btnZoom</tabstop>
+  <tabstop>btnDialogSearch</tabstop>
+  <tabstop>btnSelectNone</tabstop>
+  <tabstop>btnEqMount</tabstop>
+  <tabstop>btnTrack</tabstop>
+  <tabstop>tabQuick</tabstop>
+  <tabstop>txtObjInfo</tabstop>
+  <tabstop>scrollRight</tabstop>
+  <tabstop>tabWidgetRight</tabstop>
+  <tabstop>btnOpenUserDir</tabstop>
+  <tabstop>btnRefreshUserDir</tabstop>
+  <tabstop>tabWidget4_2</tabstop>
+  <tabstop>listScript</tabstop>
+  <tabstop>btnScriptPlay</tabstop>
+  <tabstop>btnScriptNext</tabstop>
+  <tabstop>btnScriptStop</tabstop>
+  <tabstop>btnSelConstName</tabstop>
+  <tabstop>listVideo</tabstop>
+  <tabstop>sliVideoSize</tabstop>
+  <tabstop>sliVideoVolume</tabstop>
+  <tabstop>btnVideoSingle</tabstop>
+  <tabstop>btnVideoDouble</tabstop>
+  <tabstop>btnVideoPlay</tabstop>
+  <tabstop>btnVideoStop</tabstop>
+  <tabstop>listImage</tabstop>
+  <tabstop>sliImageSize</tabstop>
+  <tabstop>sliImageTransp</tabstop>
+  <tabstop>btnImageSingle</tabstop>
+  <tabstop>btnImageDouble</tabstop>
+  <tabstop>btnImageShow</tabstop>
+  <tabstop>btnImageNext</tabstop>
+  <tabstop>btnImageHide</tabstop>
+  <tabstop>btnSelConstArt</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

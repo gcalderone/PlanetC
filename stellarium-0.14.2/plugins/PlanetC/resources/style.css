@@ -401,6 +401,10 @@ QLineEdit, QSpinBox, QDoubleSpinBox {
     font-size: 12px;
 }
 
+QSpinBox::Disabled {
+    background-color: rgb(10, 10, 10);
+    color: rgb(80, 80, 80);
+}
 
 QSpinBox::up-button,QDoubleSpinBox::up-button {
     subcontrol-origin: border;

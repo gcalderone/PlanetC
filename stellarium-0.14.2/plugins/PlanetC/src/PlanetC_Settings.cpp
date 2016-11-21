@@ -118,6 +118,12 @@ PlanetC_Settings::PlanetC_Settings(QWidget* parent) :
 	pStartDate     = conf->value("planetc/Start_date"     , "2016-01-01T12:00:00").toString();
 	pEqMountTrackAppPos = true;
 
+	pExtProjFullscreen = conf->value("planetc/extproj_Fullscreen", "1").toBool();
+	pExtProj_X         = conf->value("planetc/extproj_left"      , "0").toInt();
+	pExtProj_Y         = conf->value("planetc/extproj_top"       , "0").toInt();
+	pExtProj_W         = conf->value("planetc/extproj_width"     , "600").toInt();
+	pExtProj_H         = conf->value("planetc/extproj_height"    , "600").toInt();
+
 	ui = new Ui_PlanetC_Settings_Form();
 	createDialogContent();
 	//dialog = new QWidget(NULL, Qt::FramelessWindowHint);
@@ -158,6 +164,9 @@ PlanetC_Settings::PlanetC_Settings(QWidget* parent) :
 	ui->textAbout->document()->setDefaultStyleSheet(QString("a { color: rgb(162, 140, 66); }"));
 	ui->textAbout->setHtml(newHtml);
 	ui->textAbout->scrollToAnchor("top");
+
+	//enable/disable spin box
+	setExtProjSettings(0);
 }
 
 
@@ -177,6 +186,11 @@ void PlanetC_Settings::createDialogContent()
 	ui->spinTimeMove->setValue(pTimeMove);
 	ui->spinTimeZoom->setValue(pTimeZoom);
 	ui->btnEqMountTrackAppPos->setChecked(pEqMountTrackAppPos);
+	ui->chkExtProjFullscreen->setChecked(pExtProjFullscreen);
+	ui->spinExtProjX->setValue(pExtProj_X);
+	ui->spinExtProjY->setValue(pExtProj_Y);
+	ui->spinExtProjW->setValue(pExtProj_W);
+	ui->spinExtProjH->setValue(pExtProj_H);
 
 	connect(ui->spinUIScale          , SIGNAL(valueChanged(double)), this, SLOT(setUIScale(double)));
 	connect(ui->spinClockFontSize    , SIGNAL(valueChanged(int))   , this, SLOT(setClockFontSize(int)));
@@ -188,6 +202,11 @@ void PlanetC_Settings::createDialogContent()
 	connect(ui->closeStelWindow      , SIGNAL(clicked())           , this, SLOT(close()));
 	connect(ui->btnOpenStyleEditor   , SIGNAL(clicked())           , this, SLOT(openStyleEditor()));
 
+	connect(ui->chkExtProjFullscreen , SIGNAL(stateChanged(int))   , this, SLOT(setExtProjSettings(int)));
+	connect(ui->spinExtProjX         , SIGNAL(valueChanged(int))   , this, SLOT(setExtProjSettings(int)));
+	connect(ui->spinExtProjY         , SIGNAL(valueChanged(int))   , this, SLOT(setExtProjSettings(int)));
+	connect(ui->spinExtProjW         , SIGNAL(valueChanged(int))   , this, SLOT(setExtProjSettings(int)));
+	connect(ui->spinExtProjH         , SIGNAL(valueChanged(int))   , this, SLOT(setExtProjSettings(int)));
 }
 
 void PlanetC_Settings::setUIScale(double v)
@@ -242,3 +261,22 @@ void PlanetC_Settings::openStyleEditor()
 	editor.show();
 }
 
+void PlanetC_Settings::setExtProjSettings(int v)
+{
+	pExtProjFullscreen = ui->chkExtProjFullscreen->isChecked();
+	pExtProj_X = ui->spinExtProjX->value();
+	pExtProj_Y = ui->spinExtProjY->value();
+	pExtProj_W = ui->spinExtProjW->value();
+	pExtProj_H = ui->spinExtProjH->value();
+
+	conf->setValue("planetc/extproj_Fullscreen", QString::number(pExtProjFullscreen));
+	conf->setValue("planetc/extproj_left"      , QString::number(pExtProj_X));
+	conf->setValue("planetc/extproj_top"       , QString::number(pExtProj_Y));
+	conf->setValue("planetc/extproj_width"     , QString::number(pExtProj_W));
+	conf->setValue("planetc/extproj_height"    , QString::number(pExtProj_H));
+
+	ui->spinExtProjX->setEnabled(!pExtProjFullscreen);
+	ui->spinExtProjY->setEnabled(!pExtProjFullscreen);
+	ui->spinExtProjH->setEnabled(!pExtProjFullscreen);
+	ui->spinExtProjW->setEnabled(!pExtProjFullscreen);
+}

@@ -796,68 +796,93 @@ void PlanetC_UI::update()
 
 void PlanetC_UI::setFullScreen(bool b)
 {
+	/*
+	  qDebug() << "Number of screens:" << QGuiApplication::screens().size();
+	  qDebug() << "Primary screen:" << QGuiApplication::primaryScreen()->name();
+	  foreach (QScreen *screen, QGuiApplication::screens()) {
+	    qDebug() << "Information for screen:" << screen->name();
+	    qDebug() << "  Available geometry:" << screen->availableGeometry().x() << screen->availableGeometry().y() << screen->availableGeometry().width() << "x" << screen->availableGeometry().height();
+	    qDebug() << "  Available size:" << screen->availableSize().width() << "x" << screen->availableSize().height();
+	    qDebug() << "  Available virtual geometry:" << screen->availableVirtualGeometry().x() << screen->availableVirtualGeometry().y() << screen->availableVirtualGeometry().width() << "x" << screen->availableVirtualGeometry().height();
+	    qDebug() << "  Available virtual size:" << screen->availableVirtualSize().width() << "x" << screen->availableVirtualSize().height();
+	    qDebug() << "  Depth:" << screen->depth() << "bits";
+	    qDebug() << "  Geometry:" << screen->geometry().x() << screen->geometry().y() << screen->geometry().width() << "x" << screen->geometry().height();
+	    qDebug() << "  Logical DPI:" << screen->logicalDotsPerInch();
+	    qDebug() << "  Logical DPI X:" << screen->logicalDotsPerInchX();
+	    qDebug() << "  Logical DPI Y:" << screen->logicalDotsPerInchY();
+	    qDebug() << "  Orientation:" << screen->orientation();
+	    qDebug() << "  Physical DPI:" << screen->physicalDotsPerInch();
+	    qDebug() << "  Physical DPI X:" << screen->physicalDotsPerInchX();
+	    qDebug() << "  Physical DPI Y:" << screen->physicalDotsPerInchY();
+	    qDebug() << "  Physical size:" << screen->physicalSize().width() << "x" << screen->physicalSize().height() << "mm";
+	    qDebug() << "  Primary orientation:" << screen->primaryOrientation();
+	    qDebug() << "  Refresh rate:" << screen->refreshRate() << "Hz";
+	    qDebug() << "  Size:" << screen->size().width() << "x" << screen->size().height();
+	    qDebug() << "  Virtual geometry:" << screen->virtualGeometry().x() << screen->virtualGeometry().y() << screen->virtualGeometry().width() << "x" << screen->virtualGeometry().height();
+	    qDebug() << "  Virtual size:" << screen->virtualSize().width() << "x" << screen->virtualSize().height();
+	  }
+	*/
+
 	int nScreens = QGuiApplication::screens().size();
-	if(b)
+	QScreen* screen1 = NULL;
+	QScreen* screen2 = NULL;
+
+	if(nScreens != 2)
 	{
-		if(nScreens != 2)
+		if (b)
 		{
-			planetc->msgBox("The automatic fullscreen facility requires 2 screens!");
+			planetc->msgBox("An external screen is required for automatic positioning, and it should extend the primary screen (no screen duplication).");
 			ui->btnFullScreen->setChecked(false);
-			return;
 		}
-
-		/*
-		            qDebug() << "Number of screens:" << QGuiApplication::screens().size();
-		            qDebug() << "Primary screen:" << QGuiApplication::primaryScreen()->name();
-		            foreach (QScreen *screen, QGuiApplication::screens()) {
-		                    qDebug() << "Information for screen:" << screen->name();
-		                    qDebug() << "  Available geometry:" << screen->availableGeometry().x() << screen->availableGeometry().y() << screen->availableGeometry().width() << "x" << screen->availableGeometry().height();
-		                    qDebug() << "  Available size:" << screen->availableSize().width() << "x" << screen->availableSize().height();
-		                    qDebug() << "  Available virtual geometry:" << screen->availableVirtualGeometry().x() << screen->availableVirtualGeometry().y() << screen->availableVirtualGeometry().width() << "x" << screen->availableVirtualGeometry().height();
-		                    qDebug() << "  Available virtual size:" << screen->availableVirtualSize().width() << "x" << screen->availableVirtualSize().height();
-		                    qDebug() << "  Depth:" << screen->depth() << "bits";
-		                    qDebug() << "  Geometry:" << screen->geometry().x() << screen->geometry().y() << screen->geometry().width() << "x" << screen->geometry().height();
-		                    qDebug() << "  Logical DPI:" << screen->logicalDotsPerInch();
-		                    qDebug() << "  Logical DPI X:" << screen->logicalDotsPerInchX();
-		                    qDebug() << "  Logical DPI Y:" << screen->logicalDotsPerInchY();
-		                    qDebug() << "  Orientation:" << screen->orientation();
-		                    qDebug() << "  Physical DPI:" << screen->physicalDotsPerInch();
-		                    qDebug() << "  Physical DPI X:" << screen->physicalDotsPerInchX();
-		                    qDebug() << "  Physical DPI Y:" << screen->physicalDotsPerInchY();
-		                    qDebug() << "  Physical size:" << screen->physicalSize().width() << "x" << screen->physicalSize().height() << "mm";
-		                    qDebug() << "  Primary orientation:" << screen->primaryOrientation();
-		                    qDebug() << "  Refresh rate:" << screen->refreshRate() << "Hz";
-		                    qDebug() << "  Size:" << screen->size().width() << "x" << screen->size().height();
-		                    qDebug() << "  Virtual geometry:" << screen->virtualGeometry().x() << screen->virtualGeometry().y() << screen->virtualGeometry().width() << "x" << screen->virtualGeometry().height();
-		                    qDebug() << "  Virtual size:" << screen->virtualSize().width() << "x" << screen->virtualSize().height();
-		            }
-		*/
-
-		foreach(QScreen *screen, QGuiApplication::screens())
-		{
-			bool isPrimary = screen->name() == QGuiApplication::primaryScreen()->name();
-
-			if(isPrimary)
-				move(screen->geometry().topLeft());
-
-			if(!isPrimary || nScreens == 1)
-				stel.view->move(screen->geometry().topLeft());
-		}
+		return;
+	}
 
 
+	//Identify primary and secondary (or external) screen
+	foreach(QScreen* screen, QGuiApplication::screens())
+		if(screen->name() == QGuiApplication::primaryScreen()->name()) 
+			screen1 = screen;
+		else
+			screen2 = screen;			
+	if (!screen1) return;
+	if (!screen2) return;
+
+	//Setup PlanetC window
+	if (b)
+	{
+		move(screen1->geometry().topLeft());
 		QThread::msleep(500);
-
-		if(nScreens > 1)
-		{
-			showFullScreen();
-		}
-		stel.view->setFullScreen(true);
+		showFullScreen();
 	}
 	else
 	{
-		if(nScreens != 2) return;
-		stel.view->setFullScreen(false);
 		showNormal();
+	}
+
+
+	//Setup Stellarium window
+	if (b)
+	{
+   		if(pOpt->getExtProjFullscreen())
+		{
+			stel.view->move(screen2->geometry().topLeft());
+			QThread::msleep(500);
+			stel.view->setFullScreen(true);
+		}
+		else
+		{
+			stel.view->setFullScreen(false);
+
+			QThread::msleep(500);
+			QRect rect(screen2->geometry().topLeft() + 
+					   QPoint(pOpt->getExtProj_X(), pOpt->getExtProj_Y()), 
+					   QSize (pOpt->getExtProj_W(), pOpt->getExtProj_H()));
+			stel.view->setGeometry(rect);
+		}
+	}
+	else
+	{
+		stel.view->setFullScreen(false);
 	}
 }
 

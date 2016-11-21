@@ -111,6 +111,31 @@ public:
 		return pEqMountTrackAppPos;
 	}
 
+	bool getExtProjFullscreen()
+	{
+		return pExtProjFullscreen;
+	}
+
+	int getExtProj_X()
+	{
+		return pExtProj_X;
+	}
+
+	int getExtProj_Y()
+	{
+		return pExtProj_Y;
+	}
+
+	int getExtProj_W()
+	{
+		return pExtProj_W;
+	}
+
+	int getExtProj_H()
+	{
+		return pExtProj_H;
+	}
+
 private slots:
 	void setUIScale(double v);
 	void setClockFontSize(int v);
@@ -120,6 +145,7 @@ private slots:
 	void setShiftClock(double v);
 	void setShiftCardPo(double v);
 	void setEqMountTrackAppPos(bool v);
+	void setExtProjSettings(int);
 	void openStyleEditor();
 
 protected:
@@ -138,6 +164,12 @@ private:
 	float   pShiftClock;
 	float   pShiftCardPo;
 	bool    pEqMountTrackAppPos;
+	bool    pExtProjFullscreen;
+	int     pExtProj_X;
+	int     pExtProj_Y;
+	int     pExtProj_W;
+	int     pExtProj_H;
+
 	PlanetC_StyleEditor editor;
 };
 
