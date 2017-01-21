@@ -395,7 +395,7 @@ void StelScriptMgr::setScriptRate(float r)
 }
 
 void StelScriptMgr::pauseScript() {
-                emit(scriptPaused());  //PLANETC_GC
+	emit(scriptPaused());  //PLANETC_GC
 	agent->setPauseScript(true);
 }
 

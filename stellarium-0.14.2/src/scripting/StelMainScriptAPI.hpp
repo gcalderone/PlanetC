@@ -256,7 +256,7 @@ public slots:
 	//! @return the Declination angle in J2000 frame in decimal degrees.
 	double getViewDecJ2000Angle();
 
-        void moveToObject(float duration=1.); //PLANETC_GC
+	void moveToObject(float duration=1.); //PLANETC_GC
 
 	//! move the current viewing direction to some specified altitude and azimuth
 	//! angles may be specified in a format recognised by StelUtils::getDecAngle()

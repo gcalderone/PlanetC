@@ -73,9 +73,9 @@ public:
 	//! @param y new y position
 	//! @param duration how long for the movement to take in seconds
 	virtual void setXY(float x, float y, float duration=0.);
-                //! Set the scale of the image.
+	//! Set the scale of the image.
 	//! @param scale new scale
-                virtual void setScale(float scale); //PLANETC_GC
+	virtual void setScale(float scale); //PLANETC_GC
 	//! Set the x, y position of the image relative to the current position
 	//! @param x the offset in the x-axis
 	//! @param y the offset in the y-axis

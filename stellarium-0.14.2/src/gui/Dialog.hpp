@@ -45,20 +45,20 @@ Q_OBJECT
 public:
 	QPoint mousePos;
   
-                BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) {
-	        //PLANETC_GC
-	        if (p == NULL) { 
-		p = this;
-		while (p) {
+	BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) {
+		//PLANETC_GC
+		if (p == NULL) { 
+			p = this;
+			while (p) {
 		        if (QString(p->metaObject()->className()) == "PlanetC_Dialog") {
-			setVisible(false);
-			break;
+					setVisible(false);
+					break;
 		        }
 		        p = (QWidget*) p->parent();
-		}
-		if (p == NULL)
+			}
+			if (p == NULL)
 		        p = (QWidget*) this->parent();
-	        }
+		}
 	}
   
 	virtual void mousePressEvent(QMouseEvent *event);

@@ -35,28 +35,29 @@ void BarFrame::mouseReleaseEvent(QMouseEvent *)
 
 void BarFrame::mouseMoveEvent(QMouseEvent *event)
 {
-        if (!moving) return;
-        QPoint dpos = event->pos() - mousePos;
-        //QWidget* p = dynamic_cast<QWidget*>(QFrame::parent());
-        QPoint targetPos = p->pos() + dpos;
+	//PLANETC_GC
+	if (!moving) return;
+	QPoint dpos = event->pos() - mousePos;
+	//QWidget* p = dynamic_cast<QWidget*>(QFrame::parent());
+	QPoint targetPos = p->pos() + dpos;
 
-        if (p == parent()) { //standard Stellarium behaviour
-	//Prevent the title bar from being dragged to an unreachable position.
-	QWidget& mainWindow = StelMainView::getInstance();
-	int leftBoundX = 10 - width();
-	int rightBoundX = mainWindow.width() - 10;
-	if (targetPos.x() < leftBoundX)
-		targetPos.setX(leftBoundX);
-	else if (targetPos.x() > rightBoundX)
-		targetPos.setX(rightBoundX);
+	if (p == parent()) { //standard Stellarium behaviour
+		//Prevent the title bar from being dragged to an unreachable position.
+		QWidget& mainWindow = StelMainView::getInstance();
+		int leftBoundX = 10 - width();
+		int rightBoundX = mainWindow.width() - 10;
+		if (targetPos.x() < leftBoundX)
+			targetPos.setX(leftBoundX);
+		else if (targetPos.x() > rightBoundX)
+			targetPos.setX(rightBoundX);
 	
-	int lowerBoundY = mainWindow.height() - height();
-	if (targetPos.y() < 0)
-		targetPos.setY(0);
-	else if (targetPos.y() > lowerBoundY)
-		targetPos.setY(lowerBoundY);
-        }
-        p->move(targetPos);
+		int lowerBoundY = mainWindow.height() - height();
+		if (targetPos.y() < 0)
+			targetPos.setY(0);
+		else if (targetPos.y() > lowerBoundY)
+			targetPos.setY(lowerBoundY);
+	}
+	p->move(targetPos);
 }
 
 void ResizeFrame::mouseMoveEvent(QMouseEvent *event)

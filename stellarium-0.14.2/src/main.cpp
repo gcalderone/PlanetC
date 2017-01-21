@@ -217,28 +217,28 @@ int main(int argc, char **argv)
 	//PLANETC_GC -----------------------------------------
 	QSettings* confSettings = NULL;
 	try {
-	        QDir dir(StelFileMgr::getUserDir());
-	        dir.mkpath("planetc");
-	        QString configName = StelFileMgr::getUserDir() + "/planetc/config.ini";
-	        qDebug() << "Config file is: " << QDir::toNativeSeparators(configName);
-
-	        QFile f( configName );
-	        if (f.exists()) {
-		if (CLIProcessor::argsGetOption(argList, "", "--restore-defaults"))
+		QDir dir(StelFileMgr::getUserDir());
+		dir.mkpath("planetc");
+		QString configName = StelFileMgr::getUserDir() + "/planetc/config.ini";
+		qDebug() << "Config file is: " << QDir::toNativeSeparators(configName);
+		
+		QFile f( configName );
+		if (f.exists()) {
+			if (CLIProcessor::argsGetOption(argList, "", "--restore-defaults"))
 		        f.remove();
-	        }
-	        
-	        if (!f.exists()) {
-		qDebug() << "Config file " << configName << " does not exist. Copying the default file.";
-		QFile::copy(":PlanetC/config.ini", configName);
-		QFile::setPermissions(configName, QFile::permissions(configName) | QFileDevice::WriteOwner);
-	        }
-	        
-	        confSettings = new QSettings(configName, StelIniFormat);
+		}
+		
+		if (!f.exists()) {
+			qDebug() << "Config file " << configName << " does not exist. Copying the default file.";
+			QFile::copy(":PlanetC/config.ini", configName);
+			QFile::setPermissions(configName, QFile::permissions(configName) | QFileDevice::WriteOwner);
+		}
+		
+		confSettings = new QSettings(configName, StelIniFormat);
 	}
 	catch (std::runtime_error& e) {
-	        qWarning() << "ERROR: Can't read/write configuration file: " << e.what();
-	        qFatal("Aborting");
+		qWarning() << "ERROR: Can't read/write configuration file: " << e.what();
+		qFatal("Aborting");
 	}
 	//----------------------------------------------------
 

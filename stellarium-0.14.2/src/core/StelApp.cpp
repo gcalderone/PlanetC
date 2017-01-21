@@ -389,7 +389,7 @@ void StelApp::init(QSettings* conf)
 	devicePixelsPerPixel = QOpenGLContext::currentContext()->screen()->devicePixelRatio();
 
 	setBaseFontSize(confSettings->value("gui/base_font_size", 13).toInt());
-	
+
 	core = new StelCore();
 	if (saveProjW!=-1 && saveProjH!=-1)
 		core->windowHasBeenResized(0, 0, saveProjW, saveProjH);
@@ -507,7 +507,7 @@ void StelApp::init(QSettings* conf)
 
 	setFlagShowDecimalDegrees(confSettings->value("gui/flag_show_decimal_degrees", false).toBool());
 	setFlagOldAzimuthUsage(confSettings->value("gui/flag_use_azimuth_from_south", false).toBool());
-	
+
 	initialized = true;
 }
 
@@ -538,7 +538,7 @@ void StelApp::deinit()
 	QCoreApplication::processEvents();
 	getModuleMgr().unloadAllPlugins();
 	QCoreApplication::processEvents();
-	
+
 	StelPainter::deinitGLShaders();
 }
 
@@ -553,7 +553,7 @@ StelProgressController* StelApp::addProgressBar()
 
 void StelApp::removeProgressBar(StelProgressController* p)
 {
-	progressControllers.removeOne(p);	
+	progressControllers.removeOne(p);
 	emit(progressBarRemoved(p));
 	delete p;
 }
@@ -573,7 +573,7 @@ void StelApp::update(double deltaTime)
 		frame = 0;
 		timeBase+=1.;
 	}
-		
+
 	core->update(deltaTime);
 
 	moduleMgr->update();
@@ -589,43 +589,46 @@ void StelApp::update(double deltaTime)
 
 void StelApp::prepareRenderBuffer()
 {
-        if (!renderBuffer)
+	if (!renderBuffer)
 	{
-	        StelProjector::StelProjectorParams params = core->getCurrentStelProjectorParams();
-	        int w = params.viewportXywh[2];
-	        int h = params.viewportXywh[3];
+		StelProjector::StelProjectorParams params = core->getCurrentStelProjectorParams();
+		int w = params.viewportXywh[2];
+		int h = params.viewportXywh[3];
 
-	        QOpenGLFramebufferObjectFormat format;
-	        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-	        format.setInternalTextureFormat(GL_RGBA);
-	        renderBuffer = new QOpenGLFramebufferObject(w, h, format);
+		QOpenGLFramebufferObjectFormat format;
+		format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+		format.setInternalTextureFormat(GL_RGBA);
+		renderBuffer = new QOpenGLFramebufferObject(w, h, format);
 
-	        if (viewportEffect) {
-		delete viewportEffect;
-		viewportEffect = new StelViewportDistorterFisheyeToSphericMirror(w, h);
-	        }
+		if (viewportEffect)
+		{
+			delete viewportEffect;
+			viewportEffect = new StelViewportDistorterFisheyeToSphericMirror(w, h);
+		}
 	}
-        renderBuffer->bind();
+	renderBuffer->bind();
 }
 
 void StelApp::applyRenderBuffer()
 {
 	if (!renderBuffer) return;
-	renderBuffer->release();	
+	renderBuffer->release();
 
 	PlanetC::getInstance()->cloneView(renderBuffer); //PLANETC_GC
 
-	if (viewportEffect) {
-	        //Draw using viewportEffect
-	        viewportEffect->paintViewportBuffer(renderBuffer);
+	if (viewportEffect)
+	{
+		//Draw using viewportEffect
+		viewportEffect->paintViewportBuffer(renderBuffer);
 	}
-	else {
-	        //Straightforward draw using viewportEffect
-	        StelPainter sPainter(StelApp::getInstance().getCore()->getProjection2d());
-	        sPainter.setColor(1,1,1);
-	        sPainter.enableTexture2d(true);
-	        glBindTexture(GL_TEXTURE_2D, renderBuffer->texture());
-	        sPainter.drawRect2d(0, 0, renderBuffer->size().width(), renderBuffer->size().height());
+	else
+	{
+		//Straightforward draw using viewportEffect
+		StelPainter sPainter(StelApp::getInstance().getCore()->getProjection2d());
+		sPainter.setColor(1,1,1);
+		sPainter.enableTexture2d(true);
+		glBindTexture(GL_TEXTURE_2D, renderBuffer->texture());
+		sPainter.drawRect2d(0, 0, renderBuffer->size().width(), renderBuffer->size().height());
 	}
 }
 
@@ -677,7 +680,7 @@ void StelApp::handleClick(QMouseEvent* inputEvent)
 
 	QMouseEvent event(inputEvent->type(), QPoint(x*devicePixelsPerPixel, y*devicePixelsPerPixel), inputEvent->button(), inputEvent->buttons(), inputEvent->modifiers());
 	event.setAccepted(false);
-	
+
 	// Send the event to every StelModule
 	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionHandleMouseClicks))
 	{
