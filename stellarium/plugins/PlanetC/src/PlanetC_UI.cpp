@@ -49,42 +49,12 @@ PlanetC_GLWidget::PlanetC_GLWidget(PlanetC_UI* UI, QWidget* parent) :
 	setSizePolicy(sp);
 }
 
-void PlanetC_GLWidget::mouseMoveEvent(QMouseEvent* event)
-{
-	float x = event->pos().x();
-	float y = height() - event->pos().y();
-	x = (x - to.left()) / ((float) to.width ()) * from.width () + from.left();
-	y = (y - to.top ()) / ((float) to.height()) * from.height() + from.top ();
-	UI->setPointerPos(x, y);
-}
-
-void PlanetC_GLWidget::leaveEvent(QEvent* event)
-{
-	UI->setPointerPos();
-}
-
-void PlanetC_GLWidget::mouseReleaseEvent(QMouseEvent* event)
-{
-	if(event->button() == Qt::RightButton)
-	{
-		QPushButton* btn = UI->getUI()->btnPointer;
-		btn->setChecked(!btn->isChecked());
-	}
-}
-
-
 void PlanetC_GLWidget::initializeGL()
 {
 	gl = new myGL();
 	gl->init(QOpenGLContext::currentContext()); //context());
 	setUpdateBehavior(QOpenGLWidget::PartialUpdate);
 }
-
-void PlanetC_GLWidget::resizeGL(int width, int height)
-{}
-
-void PlanetC_GLWidget::paintGL()
-{}
 
 void PlanetC_GLWidget::cloneView(QOpenGLFramebufferObject* cloneFBO)
 {
@@ -94,7 +64,7 @@ void PlanetC_GLWidget::cloneView(QOpenGLFramebufferObject* cloneFBO)
 		return;
 	}
 
-	//if(sizeUpdated) {
+	if(sizeUpdated) {
 		sizeUpdated = false;
 
 	    //Initialize "from" and "fromF" rectangle
@@ -122,14 +92,12 @@ void PlanetC_GLWidget::cloneView(QOpenGLFramebufferObject* cloneFBO)
 	    }
 
 	    //The cloned view should have the same aspect ratio as the main view
-	    //to = rect();
-		QGraphicsView* ui = (QGraphicsView*) parent();
-	    to = ui->mapFromScene(ui->sceneRect()).boundingRect();
 		to.setRect(0, 0, 1, 1);
-		to.setSize(ui->maximumViewportSize());
+		to.setSize(((QGraphicsView*) parent())->size());
+
 	    float fromRatio = from.width() / ((float) from.height());
 	    float toRatio   =   to.width() / ((float)   to.height());
-
+		
 	    if(fromRatio > toRatio)
 	    {
 	    	to.setHeight(to.width() / fromRatio);
@@ -140,38 +108,80 @@ void PlanetC_GLWidget::cloneView(QOpenGLFramebufferObject* cloneFBO)
 	    	to.moveLeft((1 - fromRatio / toRatio) * to.width() / 2.);
 	    	to.setWidth(to.height() * fromRatio);
 	    }
-		//}
-
-	//qDebug() << "fromF " << fromF;
-	//qDebug() << "to " << ((QWidget*) parent())->rect();
-
+	}
+	
 	//Copy texture from input FBO to the QopenGLWidget FBO
 	makeCurrent();
 
 	//The following should be placed in resizeGL but it is never
 	//called since the widget is controlled by the QGraphicsView.
-	gl->glViewport(0, 0, to.width(), to.height());
+    gl->glViewport(to.left(), to.top(), to.width(), to.height());
 	gl->glMatrixMode(GL_PROJECTION);
 	gl->glLoadIdentity();
 	gl->glOrtho(0, to.width(), to.height(), 0, 1, -1);
 	gl->glMatrixMode(GL_MODELVIEW);
 	gl->glLoadIdentity();
 	gl->glEnable(GL_TEXTURE_2D);
+	//end resizeGL
 
-
-	gl->glClearColor(0, 0, 0.15, 0);
+	gl->glClearColor(0, 0, 0.05, 0);
 	gl->glClear(GL_COLOR_BUFFER_BIT);
 	gl->glBindTexture(GL_TEXTURE_2D, cloneFBO->texture());
 	gl->glColor3f(1, 1, 1);
 	gl->glBegin(GL_QUADS);
-	gl->glTexCoord2f(fromF.left (), fromF.bottom()); gl->glVertex2f(to.left (), to.top   ());
-	gl->glTexCoord2f(fromF.right(), fromF.bottom()); gl->glVertex2f(to.right(), to.top   ());
-	gl->glTexCoord2f(fromF.right(), fromF.top   ()); gl->glVertex2f(to.right(), to.bottom());
-	gl->glTexCoord2f(fromF.left (), fromF.top   ()); gl->glVertex2f(to.left (), to.bottom());
+	gl->glTexCoord2f(fromF.left (), fromF.bottom()); gl->glVertex2f(         0,           0);
+	gl->glTexCoord2f(fromF.right(), fromF.bottom()); gl->glVertex2f(to.width(),           0);
+	gl->glTexCoord2f(fromF.right(), fromF.top   ()); gl->glVertex2f(to.width(), to.height());
+	gl->glTexCoord2f(fromF.left (), fromF.top   ()); gl->glVertex2f(         0, to.height());
 	gl->glEnd();
 	doneCurrent();
 
 	update(); //schedules a repaint event to update the widget
+}
+
+
+void PlanetC_QGraphicsView::init(class PlanetC_UI* UI, class PlanetC_GLWidget* glWidget)
+{
+	this->UI = UI;
+	this->glWidget = glWidget;
+	setViewport(glWidget);
+	setResizeAnchor(QGraphicsView::AnchorViewCenter);
+}
+
+
+void PlanetC_QGraphicsView::resizeEvent(QResizeEvent* event){
+	if (glWidget)
+		glWidget->cloneView(NULL);
+	QGraphicsView::resizeEvent(event);
+}
+
+void PlanetC_QGraphicsView::mouseMoveEvent(QMouseEvent* event)
+{
+	if (!glWidget) return;
+	float x = event->pos().x();
+	float y = height() - event->pos().y();
+	x = (x - glWidget->to.left()) / ((float) glWidget->to.width ()) * glWidget->from.width () + glWidget->from.left();
+	y = (y - glWidget->to.top ()) / ((float) glWidget->to.height()) * glWidget->from.height() + glWidget->from.top ();
+	UI->setPointerPos(x, y);
+	QGraphicsView::mouseMoveEvent(event);
+}
+
+void PlanetC_QGraphicsView::leaveEvent(QEvent* event)
+{
+	if(!UI) return;
+	UI->setPointerPos();
+	QGraphicsView::leaveEvent(event);
+}
+
+void PlanetC_QGraphicsView::mouseReleaseEvent(QMouseEvent* event)
+{
+	if(!UI) return;
+	if(event->button() == Qt::RightButton)
+	{
+		QPushButton* btn = UI->getUI()->btnPointer;
+		btn->setChecked(!btn->isChecked());
+	}
+	QGraphicsView::mouseReleaseEvent(event);
 }
 
 
@@ -208,7 +218,6 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
 	//Setup clone view in PlanetC_GLWidget
 	glWidget = new PlanetC_GLWidget(this, ui->frameMiddle);
 	//ui->layoutCloneView->addWidget(glWidget);
-
 
 	//Set the remaining variables
 	mapCustomTimeRate[ui->btnTimeRate1] = 1.e1;
@@ -374,8 +383,7 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
 	setDomeMode(false);
 
 	ui->gv->setScene(stel.view->scene());
-	ui->gv->setViewport(glWidget);
-	ui->gv->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+	ui->gv->init(this, glWidget);
 }
 
 
@@ -1352,7 +1360,7 @@ void PlanetC_UI::updateVideoCurTime(qint64 pos)
 void PlanetC_UI::setVideoVolume(int v)
 {
 	video[0]->setVolume(v);
-	video[1]->setVolume(0);
+	video[1]->setVolume(v);
 }
 
 void PlanetC_UI::updateVideoStatus(int iState)
@@ -1660,13 +1668,13 @@ void PlanetC_UI::saveScreenshot()
 {
 	static QString path = QDir::homePath();
 
-	planetc->cloneView(false);
 	QString fileName = QFileDialog::getSaveFileName(NULL, tr("Open Image"), path, tr("Image Files (*.png)"));
 	if(fileName != "")
 	{
 		QFileInfo fi(fileName);
 		path = fi.absolutePath();
+		planetc->cloneView(false);
 		stel.view->saveScreenShot(fi.completeBaseName(), path, true);
+		planetc->cloneView(true);
 	}
-	planetc->cloneView(true);
 }

@@ -613,7 +613,7 @@
         </property>
         <layout class="QVBoxLayout" name="layoutCloneView">
          <item>
-          <widget class="QGraphicsView" name="gv"/>
+          <widget class="PlanetC_QGraphicsView" name="gv"/>
          </item>
         </layout>
        </widget>
@@ -1989,6 +1989,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>PlanetC_QGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">PlanetC_Widgets.hpp</header>
+  </customwidget>
   <customwidget>
    <class>PlanetC_sliZoom</class>
    <extends>QDial</extends>
