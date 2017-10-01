@@ -235,6 +235,8 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
 	searchdialog = new PlanetC_SearchDialog(this);
 	configurationdialog = new PlanetC_myConfigurationDialog(this);
 	locationdialog = new PlanetC_LocationDialog(this);
+	astroCalcdialog = new PlanetC_AstroCalcDialog(this);
+	bookmarksdialog = new PlanetC_BookmarksDialog(this);
 
 
 	//Connect signals
@@ -249,6 +251,8 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
 	connect(ui->btnDialogConfig    , SIGNAL(clicked())        , configurationdialog->window, SLOT(show()));
 	connect(ui->btnDialogView      , SIGNAL(clicked())        , viewdialog->window         , SLOT(show()));
 	connect(ui->btnDialogSearch    , SIGNAL(clicked())        , searchdialog->window       , SLOT(show()));
+	connect(ui->btnDialogCalc      , SIGNAL(clicked())        , astroCalcdialog->window    , SLOT(show()));
+	connect(ui->btnDialogBook      , SIGNAL(clicked())        , bookmarksdialog->window    , SLOT(show()));
 
 	connect(ui->btnMouseKeys       , SIGNAL(toggled(bool))    , this          , SLOT(enableMouseKeys(bool)));
 	connect(ui->btnFullScreen      , SIGNAL(toggled(bool))    , this          , SLOT(setFullScreen(bool)));
@@ -408,6 +412,8 @@ PlanetC_UI::~PlanetC_UI()
 	delete configurationdialog;
 	delete viewdialog;
 	delete searchdialog;
+	delete astroCalcdialog;
+	delete bookmarksdialog;
 	delete video;
 	delete pOpt;
 	delete ui;
@@ -1593,6 +1599,11 @@ void PlanetC_UI::setUIStyle(double scale)
 	searchdialog->dialog->setStyleSheet(stelStyle);
 	searchdialog->dialog->adjustSize();
 
+	astroCalcdialog->dialog->setStyleSheet(stelStyle);
+	astroCalcdialog->dialog->adjustSize();
+
+	bookmarksdialog->dialog->setStyleSheet(stelStyle);
+	bookmarksdialog->dialog->adjustSize();
 
 	QString style = scaleStyleSheet(pOpt->editor.loadCurrentFile(),
 	                                pOpt->getUIScale());

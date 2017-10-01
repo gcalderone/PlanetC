@@ -30,6 +30,8 @@
 #include "LocationDialog.hpp"
 #include "ViewDialog.hpp"
 #include "SearchDialog.hpp"
+#include "AstroCalcDialog.hpp"
+#include "BookmarksDialog.hpp"
 #include "ui_searchDialogGui.h"
 
 #include "PlanetC.hpp"
@@ -105,6 +107,8 @@ PLANETC_DIALOG(ViewDialog);
 PLANETC_DIALOG(LocationDialog);
 PLANETC_DIALOG(SearchDialog);
 PLANETC_DIALOG(myConfigurationDialog);
+PLANETC_DIALOG(AstroCalcDialog);
+PLANETC_DIALOG(BookmarksDialog);
 
 
 
@@ -359,6 +363,8 @@ private:
 	PlanetC_ViewDialog* viewdialog;
 	PlanetC_myConfigurationDialog* configurationdialog;
 	PlanetC_LocationDialog* locationdialog;
+	PlanetC_AstroCalcDialog* astroCalcdialog;
+	PlanetC_BookmarksDialog* bookmarksdialog;
 
 	float currentFOV;
 	QString currentObjInfo;
