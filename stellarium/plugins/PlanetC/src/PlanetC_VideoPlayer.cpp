@@ -29,31 +29,35 @@ PlanetC_VideoPlayer::PlanetC_VideoPlayer(QGraphicsView* p_view)
 #endif
 	  
 {
-	posX = 0;
-	posY = 0;
-	scale = 100;
-	rotationAngle = 0.;
+	scale = 1;
 #ifdef ENABLE_QTAV
 	QtAV::Widgets::registerRenderers();
-	videoItem = new QtAV::GraphicsItemRenderer();
+	videoItem1 = new QtAV::GraphicsItemRenderer();
+	videoItem2 = new QtAV::GraphicsItemRenderer();
 #else
-    videoItem = new QGraphicsVideoItem();
+    videoItem1 = new QGraphicsVideoItem();
+    videoItem2 = new QGraphicsVideoItem();
 #endif
-	videoItem->setVisible(false);
-	videoItem->setOpacity(1.);
+	videoItem1->setVisible(false);
+	videoItem2->setVisible(false);
+	videoItem1->setOpacity(1.);
+	videoItem2->setOpacity(1.);
 
 #ifdef ENABLE_QTAV
-    videoItem->setOutAspectRatioMode(QtAV::VideoRenderer::VideoAspectRatio);
+    videoItem1->setOutAspectRatioMode(QtAV::VideoRenderer::VideoAspectRatio);
+    videoItem2->setOutAspectRatioMode(QtAV::VideoRenderer::VideoAspectRatio);
 #endif
 
 	//Add object to the main scene
 	view = p_view;
-	view->scene()->addItem(videoItem);
+	view->scene()->addItem(videoItem1);
+	view->scene()->addItem(videoItem2);
 
 #ifdef ENABLE_QTAV
-    setRenderer(videoItem);
+    setRenderer(videoItem1);
+    addVideoRenderer(videoItem2);
 #else
-	setVideoOutput(videoItem);
+	setVideoOutput(videoItem1);
 #endif
 
 	//Once geometry properties are available (width, height) set the GraphicsVideoItem geometry
@@ -89,13 +93,10 @@ void PlanetC_VideoPlayer::handleStateChange(int state)
 }
 #endif
 
-void PlanetC_VideoPlayer::openFile(const QString& filename)
+void PlanetC_VideoPlayer::openFile(const QString& filename, bool twin)
 {
-	//Set default options
-	posX = 0;
-	posY = 0;
+	this->twin = twin;
 	scale = 1;
-	rotationAngle = 0;
 
 #ifdef ENABLE_QTAV
 	setFile(filename);
@@ -116,24 +117,17 @@ void PlanetC_VideoPlayer::stop()
 #endif
 }
 
-void PlanetC_VideoPlayer::setGeometry(float posX, float posY, float scale)
+void PlanetC_VideoPlayer::setScale(float scale)
 {
-	//Save input values into private state
-	if(posX >= 0)  this->posX = posX;
-	if(posY >= 0)  this->posY = posY;
-	if(scale >= 0) this->scale = scale;
+	this->scale = scale;
 	flagUpdate = true;
 }
 
 void PlanetC_VideoPlayer::setVisible(bool b)
 {
-	videoItem->setVisible(b);
-}
-
-void PlanetC_VideoPlayer::setRotation(float rotationAngle)
-{
-	this->rotationAngle = rotationAngle;
-	flagUpdate = true;
+	videoItem1->setVisible(b);
+	if(twin)
+		videoItem2->setVisible(b);
 }
 
 void PlanetC_VideoPlayer::setVolume(float vol)
@@ -145,46 +139,50 @@ void PlanetC_VideoPlayer::setVolume(float vol)
 	#endif
 }
 
-void PlanetC_VideoPlayer::forceUpdate()
-{
-	flagUpdate = true;
-}
-
 void PlanetC_VideoPlayer::update(qint64 timepos)
 {
 	if (!flagUpdate) return;
 	flagUpdate = false;
 
-	if(scale > 0)
-	{
 #ifdef ENABLE_QTAV
-		//videoItem->setOpenGL(true);
-		QSize videoSize = videoItem->videoFrameSize();
+	//videoItem1->setOpenGL(true);
+	QSize videoSize = videoItem1->videoFrameSize();
 #else
-		QSize videoSize;// = videoItem->size();
+	QSize videoSize;// = videoItem1->size();
 #endif
-		QRectF viewRect = view->mapToScene(view->viewport()->rect()).boundingRect();
+	QRectF viewRect = view->mapToScene(view->viewport()->rect()).boundingRect();
 
-		int maxW = viewRect.width();
-		int maxH = viewRect.height();
-		if (posY != 0.5) 
-			maxH /= 2.;
+	int maxW = viewRect.width();
+	int maxH = viewRect.height();
+	if (twin) maxH /= 2.;
 
-		float scale2W = (scale * maxW) / videoSize.width();
-		float scale2H = (scale * maxH) / videoSize.height();
-		float scale2 = (scale2W < scale2H  ?  scale2W  :  scale2H);
+	float scale2W = (scale * maxW) / videoSize.width();
+	float scale2H = (scale * maxH) / videoSize.height();
+	float scale2 = (scale2W < scale2H  ?  scale2W  :  scale2H);
 #ifdef ENABLE_QTAV
-		videoItem->resizeRenderer(videoSize.width() * scale2, videoSize.height() * scale2);
+	videoItem1->resizeRenderer(videoSize.width() * scale2, videoSize.height() * scale2);
+	videoItem2->resizeRenderer(videoSize.width() * scale2, videoSize.height() * scale2);
 #endif
 
-		//Rotation occurs wrt the OriginPoint.  Set the latter at the center of Item.
-		videoItem->setTransformOriginPoint(videoItem->boundingRect().center());
-		videoItem->setRotation(rotationAngle);
+	//Rotation occurs wrt the OriginPoint.  Set the latter at the center of Item.
+	videoItem1->setTransformOriginPoint(videoItem1->boundingRect().center());
+	videoItem1->setRotation(0);
+	videoItem2->setTransformOriginPoint(videoItem2->boundingRect().center());
+	videoItem2->setRotation(180);
 	
-		QPointF pos(posX * viewRect.width(), posY * viewRect.height());
-		videoItem->setPos(pos - videoItem->transformOriginPoint());
+	float posX = 0.5;
+	float posY = 0.5;
+	if(twin) posY = 0.75;
+	
+	QPointF pos1(posX * viewRect.width(), posY * viewRect.height());
+	videoItem1->setPos(pos1 - videoItem1->transformOriginPoint());
+		
+	if(twin)
+	{
+		posY = 0.25;
+		QPointF pos2(posX * viewRect.width(), posY * viewRect.height());
+		videoItem2->setPos(pos2 - videoItem2->transformOriginPoint());
 	}
-	else
-		qDebug() << "WARNING: no size specified for video";
 }
+
 

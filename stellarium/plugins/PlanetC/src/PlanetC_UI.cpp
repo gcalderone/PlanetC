@@ -202,11 +202,10 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
 
 	image[0] = NULL;
 	image[1] = NULL;
-	video[0] = new PlanetC_VideoPlayer(stel.view);
-	video[1] = new PlanetC_VideoPlayer(stel.view);
+	video = new PlanetC_VideoPlayer(stel.view);
 
-	connect(video[0], SIGNAL(positionChanged(qint64)), this, SLOT(updateVideoCurTime(qint64)));
-	connect(video[0], SIGNAL(statechanged(int))      , this, SLOT(updateVideoStatus(int)));
+	connect(video, SIGNAL(positionChanged(qint64)), this, SLOT(updateVideoCurTime(qint64)));
+	connect(video, SIGNAL(statechanged(int))      , this, SLOT(updateVideoStatus(int)));
 
 	addLocationButtons();
 	ui->btnVideoPlay->setIcon(QApplication::style()->standardIcon(QStyle::SP_MediaPlay));
@@ -409,8 +408,7 @@ PlanetC_UI::~PlanetC_UI()
 	delete configurationdialog;
 	delete viewdialog;
 	delete searchdialog;
-	delete video[0];
-	delete video[1];
+	delete video;
 	delete pOpt;
 	delete ui;
 }
@@ -1341,7 +1339,7 @@ void PlanetC_UI::updateVideoCurTime(qint64 pos)
 	static QTime time0(0, 0, 0);
 	QTime time = time0.addMSecs(pos);
 
-	qint64 dur_msec = video[0]->duration();
+	qint64 dur_msec = video->duration();
 	if(dur_msec < 100)
 		ui->labelVideoTime->setText("Time: " + time.toString());
 	else
@@ -1351,16 +1349,15 @@ void PlanetC_UI::updateVideoCurTime(qint64 pos)
 	}
 
 #ifdef ENABLE_QTAV
-	if (!video[0]->isPaused()) {
-		ui->sliVideoPos->setValue( 100.* pos / ((float) video[0]->duration()));
+	if (!video->isPaused()) {
+		ui->sliVideoPos->setValue( 100.* pos / ((float) video->duration()));
 	}
 #endif
 }
 
 void PlanetC_UI::setVideoVolume(int v)
 {
-	video[0]->setVolume(v);
-	video[1]->setVolume(v);
+	video->setVolume(v / 100.);
 }
 
 void PlanetC_UI::updateVideoStatus(int iState)
@@ -1392,21 +1389,16 @@ void PlanetC_UI::updateVideoStatus(int iState)
 
 void PlanetC_UI::setVideoSize(int size)
 {
-	video[0]->setGeometry(-1, -1, size / 100.);
-	video[1]->setGeometry(-1, -1, size / 100.);
+	video->setScale(size / 100.);
 }
 
 void PlanetC_UI::setVideoPos(int pos)
 {
 #ifdef ENABLE_QTAV
-	if (!video[0]->isPaused())  video[0]->pause();
-	if (!video[1]->isPaused())  video[1]->pause();
+	if (!video->isPaused())  video->pause();
 	if (pos == 0) return;
-	if (video[0]->isPaused()  &&  video[0]->isSeekable())
-	{
-		video[0]->seek(pos / 100.);
-		video[1]->seek(pos / 100.);
-	}
+	if (video->isPaused()  &&  video->isSeekable())
+		video->seek(pos / 100.);
 #endif
 }
 
@@ -1414,25 +1406,15 @@ void PlanetC_UI::setVideoPos(int pos)
 void PlanetC_UI::videoPlay()
 {
 #ifdef ENABLE_QTAV
-	if(video[0]->isPaused())
+	if(video->isPaused())
 	{
-		if(video[1]->isPaused())
-		{
-			video[1]->setPosition(video[0]->position());
-			video[1]->pause(false);
-		}
-		video[0]->pause(false);
+		video->pause(false);
 		return;
 	}
 
-	if(video[0]->isPlaying())
+	if(video->isPlaying())
 	 {
-		 video[0]->pause();
-		 if(video[1]->isPlaying())
-		 {
-			 video[1]->setPosition(video[0]->position());
-			 video[1]->pause();
-		 }
+		 video->pause();
 		 return;
 	 }
 
@@ -1443,28 +1425,16 @@ void PlanetC_UI::videoPlay()
 	imageHide(); //Hide images before starting the video
 
 	qDebug() << "Playing video: " << file;
-	video[0]->openFile(file);
-	video[0]->setGeometry(0.5, 0.5, ui->sliVideoSize->value()/100.);
-
-	if(ui->btnVideoDouble->isChecked())
-	{
-		video[1]->openFile(file);
-		video[0]->setGeometry(0.5, 0.75, ui->sliVideoSize->value()/200.);
-		video[1]->setGeometry(0.5, 0.25, ui->sliVideoSize->value()/200.);
-		video[1]->setRotation(180);
-	}
-
+	video->openFile(file, ui->btnVideoDouble->isChecked());
+	video->setScale(ui->sliVideoSize->value()/100.);
 	setVideoVolume(ui->sliVideoVolume->value());
-
-	video[0]->play();
-	if(ui->btnVideoDouble->isChecked()) video[1]->play();
+	video->play();
 #endif
 }
 
 void PlanetC_UI::videoStop()
 {
-	video[0]->stop();
-	video[1]->stop();
+	video->stop();
 }
 
 

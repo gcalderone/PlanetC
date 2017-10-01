@@ -54,14 +54,12 @@ public:
 	PlanetC_VideoPlayer(QGraphicsView* p_view);
 	~PlanetC_VideoPlayer();
 
-	void openFile(const QString& filename);
+	void openFile(const QString& filename, bool twin);
 	void stop();
 
-	void setGeometry(float posX=-1, float posY=-1, float scale=-1);
-	void setRotation(float rotationAngle);
+	void setScale(float scale);
 	void setVolume(float vol);
 	void setVisible(bool);
-	void forceUpdate();
 
 private slots:
 #ifdef ENABLE_QTAV
@@ -77,16 +75,16 @@ signals:
 private:
 	QGraphicsView* view;
 #ifdef ENABLE_QTAV
-    QtAV::GraphicsItemRenderer *videoItem;
+    QtAV::GraphicsItemRenderer *videoItem1;
+    QtAV::GraphicsItemRenderer *videoItem2;
 #else
-	QGraphicsVideoItem* videoItem;
+	QGraphicsVideoItem* videoItem1;
+	QGraphicsVideoItem* videoItem2;
 #endif
 
-	float posX;
-	float posY;
 	float scale;
-	float rotationAngle;
 	bool flagUpdate;
+	bool twin;
 };
 
 
