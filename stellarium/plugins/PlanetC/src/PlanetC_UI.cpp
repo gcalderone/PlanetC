@@ -1271,13 +1271,12 @@ void PlanetC_UI::setImageSize(int pos)
 		int maxH = stel.view->height();
 		if(Twin) maxH /= 2.;
 
-		float scale2 = (scale * maxW) / image[0]->imageWidth();
-		if (scale2 * image[0]->imageHeight() > maxH)
-			scale2 = (scale * maxH) / image[0]->imageHeight();
-
-		image[0]->setScale(scale2);
+		float scale2W = (scale * maxW) / image[0]->imageWidth ();
+		float scale2H = (scale * maxH) / image[0]->imageHeight();
+		scale = (scale2W < scale2H  ?  scale2W  :  scale2H);
+		image[0]->setScale(scale);
 		if(Twin)
-			image[1]->setScale(scale2);
+			image[1]->setScale(scale);
 	}
 }
 

@@ -170,9 +170,9 @@ void PlanetC_VideoPlayer::update(qint64 timepos)
 		if (posY != 0.5) 
 			maxH /= 2.;
 
-		float scale2 = (scale * maxW) / videoSize.width();
-		if (scale2 * videoSize.height() > maxH)
-			scale2 = (scale * maxH) / videoSize.height();
+		float scale2W = (scale * maxW) / videoSize.width();
+		float scale2H = (scale * maxH) / videoSize.height();
+		float scale2 = (scale2W < scale2H  ?  scale2W  :  scale2H);
 #ifdef ENABLE_QTAV
 		videoItem->resizeRenderer(videoSize.width() * scale2, videoSize.height() * scale2);
 #endif
