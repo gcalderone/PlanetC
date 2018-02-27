@@ -7,7 +7,7 @@ ftp://ftp.imcce.fr/pub/ephem/satel/gust86
 I (Johannes Gajdosik) have just taken the Fortran code and data
 obtained from above and rearranged it into this piece of software.
 
-I can neigther allow nor forbid the usage of the GUST86 theory.
+I can neither allow nor forbid the usage of the GUST86 theory.
 The copyright notice below covers not the works of LASKAR J. and JACOBSON, R.,
 but just my work, that is the compilation of the GUST86 theory
 into the software supplied in this file.
@@ -43,6 +43,7 @@ My implementation of GUST86 has the following modifications:
 4) calculate the orbital elements not for every new jd but rather reuse
    the previousely calculated elements if possible
 
+   WARNING! Due to static internal variables, this function is not reentrant and not parallelizable!
 ****************************************************************/
 
 
@@ -59,7 +60,7 @@ extern "C" {
 #define GUST86_TITANIA   3
 #define GUST86_OBERON    4
 
-void GetGust86Coor(const double jd, const int body, double *xyz);
+void GetGust86Coor(const double jd, const int body, double *xyz, double *xyzdot);
   /* Return the rectangular coordinates of the given satellite
      and the given julian date jd expressed in dynamical time (TAI+32.184s).
      The origin of the xyz-coordinates is the center of the planet.
@@ -90,6 +91,7 @@ void GetGust86Coor(const double jd, const int body, double *xyz);
      
 void GetGust86OsculatingCoor(const double jd0, const double jd, const int body, double *xyz);
   /* The oculating orbit of epoch jd0, evaluated at jd, is returned.
+   * xyz is a 6-vector (position&speed)
   */
 
 #ifdef __cplusplus

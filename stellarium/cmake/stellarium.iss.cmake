@@ -9,23 +9,25 @@ WizardSmallImageFile=@CMAKE_SOURCE_DIR@\data\icon.bmp
 WizardImageFile=@CMAKE_SOURCE_DIR@\data\splash.bmp
 WizardImageStretch=no
 WizardImageBackColor=clBlack
-AppName=Stellarium-PlanetC
-AppVersion=@PLANETC_PLUGIN_VERSION@
-AppVerName=Stellarium-PlanetC @PLANETC_PLUGIN_VERSION@
-AppCopyright=Copyright (C) 2016-2017 Giorgio Calderone
-AppPublisher=Giorgio Calderone
-AppPublisherURL=https://github.com/gcalderone/PlanetC
-AppSupportURL=https://github.com/gcalderone/PlanetC
-AppUpdatesURL=https://github.com/gcalderone/PlanetC
-VersionInfoVersion=@PLANETC_PLUGIN_VERSION@
+
+AppName=Stellarium-PlanetC
+AppVersion=@PLANETC_PLUGIN_VERSION@
+AppVerName=Stellarium-PlanetC @PLANETC_PLUGIN_VERSION@
+AppCopyright=Copyright (C) 2016-2018 Giorgio Calderone
+AppPublisher=Giorgio Calderone
+AppPublisherURL=https://github.com/gcalderone/PlanetC
+AppSupportURL=https://github.com/gcalderone/PlanetC
+AppUpdatesURL=https://github.com/gcalderone/PlanetC
+VersionInfoVersion=@PLANETC_PLUGIN_VERSION@
+
 MinVersion=0,@MIN_VERSION@
 SetupIconFile=@CMAKE_SOURCE_DIR@\data\@PACKAGE_ICON@.ico
 OutputBaseFilename=PlanetC-v@PLANETC_PLUGIN_VERSION@-@PACKAGE_VERSION@-@ISS_PACKAGE_PLATFORM@
 OutputDir=@CMAKE_SOURCE_DIR@\installers
 ; In 64-bit mode, {pf} is equivalent to {pf64},
 ; see http://www.jrsoftware.org/ishelp/index.php?topic=32vs64bitinstalls
-DefaultDirName={pf}\PlanetC
-DefaultGroupName=PlanetC
+DefaultDirName={pf}\PlanetC
+DefaultGroupName=PlanetC
 UninstallDisplayIcon={app}\data\stellarium.ico
 LicenseFile=@CMAKE_SOURCE_DIR@\COPYING
 ChangesAssociations=yes
@@ -40,12 +42,12 @@ Source: "@CMAKE_INSTALL_PREFIX@\bin\stellarium.exe"; Flags: ignoreversion; DestD
 @REDIST_FILES@
 Source: "@CMAKE_SOURCE_DIR@\data\stellarium.url"; Flags: ignoreversion; DestDir: "{app}"
 Source: "@CMAKE_SOURCE_DIR@\data\stellarium-devdocs.url"; Flags: ignoreversion; DestDir: "{app}"
-Source: "@CMAKE_SOURCE_DIR@\README"; DestDir: "{app}"; Flags: isreadme ignoreversion; DestName: "README.rtf"
-Source: "README-PLANETC"; DestDir: "{app}"; Flags: isreadme; DestName: "README-PLANETC.txt"
-Source: "@CMAKE_SOURCE_DIR@\INSTALL"; DestDir: "{app}"; Flags: ignoreversion; DestName: "INSTALL.rtf"
-Source: "@CMAKE_SOURCE_DIR@\COPYING"; DestDir: "{app}"; Flags: ignoreversion; DestName: "GPL.rtf"
-Source: "@CMAKE_SOURCE_DIR@\AUTHORS"; DestDir: "{app}"; Flags: ignoreversion; DestName: "AUTHORS.rtf"
-Source: "@CMAKE_SOURCE_DIR@\ChangeLog"; DestDir: "{app}"; Flags: ignoreversion; DestName: "ChangeLog.rtf"
+Source: "README-PLANETC"; DestDir: "{app}"; Flags: isreadme; DestName: "README-PLANETC.txt"
+; Source: "@CMAKE_SOURCE_DIR@\README.md"; DestDir: "{app}"; Flags: isreadme ignoreversion; DestName: "README.txt"
+; Source: "@CMAKE_SOURCE_DIR@\INSTALL"; DestDir: "{app}"; Flags: ignoreversion; DestName: "INSTALL.txt"
+Source: "@CMAKE_SOURCE_DIR@\COPYING"; DestDir: "{app}"; Flags: ignoreversion; DestName: "GPL.txt"
+; Source: "@CMAKE_SOURCE_DIR@\AUTHORS"; DestDir: "{app}"; Flags: ignoreversion; DestName: "AUTHORS.txt"
+Source: "@CMAKE_SOURCE_DIR@\ChangeLog"; DestDir: "{app}"; Flags: ignoreversion; DestName: "ChangeLog.txt"
 Source: "@QtCore_location@"; DestDir: "{app}";
 Source: "@QtGui_location@"; DestDir: "{app}";
 @ISS_QT_OPENGL@
@@ -86,7 +88,7 @@ Filename: "{app}\stellarium.exe"; Description: "{cm:LaunchProgram,Stellarium}"; 
 ;The old log file in all cases
 Type: files; Name: "{userappdata}\Stellarium\log.txt"
 Type: files; Name: "{userappdata}\Stellarium\config.ini"; Tasks: removeconfig
-Type: files; Name: "{userappdata}\Stellarium\data\ssystem.ini"; Tasks: removesolar
+Type: files; Name: "{userappdata}\Stellarium\data\ssystem_minor.ini"; Tasks: removesolar
 Type: filesandordirs; Name: "{userappdata}\Stellarium\modules"; Tasks: removeplugins
 Type: filesandordirs; Name: "{userappdata}\Stellarium\landscapes"; Tasks: removelandscapes
 Type: filesandordirs; Name: "{localappdata}\stellarium\stellarium"; Tasks: removecache
@@ -108,10 +110,10 @@ Name: "{group}\PlanetC {cm:AngleMode}"; Filename: "{app}\stellarium.exe"; Parame
 Name: "{group}\PlanetC {cm:MesaMode}"; Filename: "{app}\stellarium.exe"; Parameters: "--mesa-mode"; WorkingDir: "{app}"; IconFilename: "{app}\data\stellarium.ico"
 @ISS_SPOUT@
 Name: "{group}\{cm:UninstallProgram,Stellarium-PlanetC}"; Filename: "{uninstallexe}"
-Name: "{group}\config.ini"; Filename: "{userappdata}\Stellarium\planetc/config.ini"
+Name: "{group}\config.ini"; Filename: "{userappdata}\Stellarium\planetc\config.ini"
 Name: "{group}\{cm:LastRunLog}"; Filename: "{userappdata}\Stellarium\log.txt"
 Name: "{group}\{cm:OutputDataFile}"; Filename: "{userappdata}\Stellarium\output.txt"
-Name: "{group}\{cm:ChangeLog}"; Filename: "{app}\ChangeLog.rtf"
+Name: "{group}\{cm:ChangeLog}"; Filename: "{app}\ChangeLog.txt"
 @ISS_GUIDE@
 Name: "{commondesktop}\PlanetC"; Filename: "{app}\stellarium.exe"; WorkingDir: "{app}"; IconFilename: "{app}\data\stellarium.ico"; Tasks: desktopicon\common
 Name: "{userdesktop}\PlanetC"; Filename: "{app}\stellarium.exe"; WorkingDir: "{app}"; IconFilename: "{app}\data\stellarium.ico"; Tasks: desktopicon\user
@@ -144,12 +146,12 @@ const
   INSTALLSTATE_DEFAULT = 5;      // The product is installed for the current user.
 
   // Visual C++ 2013 Redistributable 12.0.21005
-  VC_REDIST_X86 = '{13A4EE12-23EA-3371-91EE-EFB36DDFFF3E}';
-  VC_REDIST_X64 = '{A749D8E6-B613-3BE3-8F5F-045C84EBA29B}';
+  // VC_REDIST_X86 = '{13A4EE12-23EA-3371-91EE-EFB36DDFFF3E}';
+  // VC_REDIST_X64 = '{A749D8E6-B613-3BE3-8F5F-045C84EBA29B}';
   
-  // Visual C++ 2015 Redistributable 14.0.23506
-  // VC_REDIST_X86 = '{23daf363-3020-4059-b3ae-dc4ad39fed19}';
-  // VC_REDIST_X64 = '{3ee5e5bb-b7cc-4556-8861-a00a82977d6c}';
+  // Visual C++ 2015 Redistributable 14.0.24215
+  VC_REDIST_X86 = '{e2803110-78b3-4664-a479-3611a381656a}';
+  VC_REDIST_X64 = '{d992c12e-cab2-426f-bde3-fb8c53950b0d}';
 
 function MsiQueryProductState(szProduct: string): INSTALLSTATE; 
   external 'MsiQueryProductState{#AW}@msi.dll stdcall';
@@ -164,10 +166,9 @@ begin
   // here the Result must be True when you need to install your VCRedist
   // or False when you don't need to, so now it's upon you how you build
   // this statement, the following won't install your VC redist only when
-  // the Visual C++ 2013 Redist are installed for the current user
+  // the Visual C++ 2015 Redist are installed for the current user
   Result := not (VCVersionInstalled(@REDIST_VERSION@));
 end;
-
 
 procedure CurUninstallStepChanged (CurUninstallStep: TUninstallStep);
 var
@@ -176,7 +177,7 @@ begin
   case CurUninstallStep of
     usPostUninstall:
       begin
-        mres := MsgBox('{cm:DeleteUserData}', mbConfirmation, MB_YESNO or MB_DEFBUTTON2)
+        mres := SuppressibleMsgBox(ExpandConstant('{cm:DeleteUserData}'), mbConfirmation, MB_YESNO or MB_DEFBUTTON2, IDYES)
         if mres = IDYES then
           DelTree(ExpandConstant('{userappdata}\Stellarium'), True, True, True);
           DelTree(ExpandConstant('{userdocs}\Stellarium'), True, True, True);

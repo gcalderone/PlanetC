@@ -74,6 +74,7 @@ StelPluginInfo QuasarsStelPluginInterface::getPluginInfo() const
 	info.contact = "alex.v.wolf@gmail.com";
 	info.description = N_("A plugin that shows some quasars brighter than 16 visual magnitude. A catalogue of quasars compiled from 'Quasars and Active Galactic Nuclei' (13th Ed.) (Veron+ 2010) =2010A&A...518A..10V");
 	info.version = QUASARS_PLUGIN_VERSION;
+	info.license = QUASARS_PLUGIN_LICENSE;
 	return info;
 }
 
@@ -85,7 +86,6 @@ Quasars::Quasars()
 	, updateState(CompleteNoUpdates)
 	, downloadMgr(Q_NULLPTR)
 	, updateTimer(Q_NULLPTR)
-	, messageTimer(Q_NULLPTR)
 	, updatesEnabled(false)
 	, updateFrequencyDays(0)
 	, enableAtStartup(false)
@@ -181,13 +181,6 @@ void Quasars::init()
 		qWarning() << "[Quasars] init error:" << e.what();
 		return;
 	}
-
-	// A timer for hiding alert messages
-	messageTimer = new QTimer(this);
-	messageTimer->setSingleShot(true);   // recurring check for update
-	messageTimer->setInterval(9000);      // 6 seconds should be enough time
-	messageTimer->stop();
-	connect(messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
 
 	// If the json file does not already exist, create it from the resource in the Qt resource
 	if(QFileInfo(catalogJsonPath).exists())
@@ -641,11 +634,7 @@ void Quasars::updateJSON(void)
 void Quasars::updateDownloadComplete(QNetworkReply* reply)
 {
 	// check the download worked, and save the data to file if this is the case.
-	if (reply->error() != QNetworkReply::NoError)
-	{
-		qWarning() << "[Quasars] FAILED to download" << reply->url() << " Error: " << reply->errorString();
-	}
-	else
+	if (reply->error() == QNetworkReply::NoError && reply->bytesAvailable()>0)
 	{
 		// download completed successfully.
 		QString jsonFilePath = StelFileMgr::findFile("modules/Quasars", StelFileMgr::Flags(StelFileMgr::Writable|StelFileMgr::Directory)) + "/quasars.json";
@@ -664,6 +653,8 @@ void Quasars::updateDownloadComplete(QNetworkReply* reply)
 			jsonFile.close();
 		}
 	}
+	else
+		qWarning() << "[Quasars] FAILED to download" << reply->url() << " Error: " << reply->errorString();
 
 	if (progressBar)
 	{
@@ -675,16 +666,7 @@ void Quasars::updateDownloadComplete(QNetworkReply* reply)
 
 void Quasars::displayMessage(const QString& message, const QString hexColor)
 {
-	messageIDs << GETSTELMODULE(LabelMgr)->labelScreen(message, 30, 30 + (20*messageIDs.count()), true, 16, hexColor);
-	messageTimer->start();
-}
-
-void Quasars::messageTimeout(void)
-{
-	foreach(int i, messageIDs)
-	{
-		GETSTELMODULE(LabelMgr)->deleteLabel(i);
-	}
+	messageIDs << GETSTELMODULE(LabelMgr)->labelScreen(message, 30, 30 + (20*messageIDs.count()), true, 16, hexColor, false, 9000);
 }
 
 void Quasars::upgradeConfigIni(void)

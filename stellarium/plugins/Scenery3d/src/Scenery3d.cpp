@@ -136,7 +136,9 @@ void Scenery3d::handleKeys(QKeyEvent* e)
 
 		switch (e->key())
 		{
+			case Qt::Key_Plus:      // or
 			case Qt::Key_PageUp:    movementKeyInput[2] =  1.0f * speedup; e->accept(); break;
+			case Qt::Key_Minus:     // or
 			case Qt::Key_PageDown:  movementKeyInput[2] = -1.0f * speedup; e->accept(); break;
 			case Qt::Key_Up:        movementKeyInput[1] =  1.0f * speedup; e->accept(); break;
 			case Qt::Key_Down:      movementKeyInput[1] = -1.0f * speedup; e->accept(); break;
@@ -159,7 +161,9 @@ void Scenery3d::handleKeys(QKeyEvent* e)
 		//we do not accept the event on MacOS to allow further handling the event in other modules. (Else the regular view motion stop does not work!)
 		switch (e->key())
 		{
+			case Qt::Key_Plus:
 			case Qt::Key_PageUp:
+			case Qt::Key_Minus:
 			case Qt::Key_PageDown:
 				movementKeyInput[2] = 0.0f;
 #ifndef Q_OS_OSX
@@ -1110,9 +1114,10 @@ StelPluginInfo Scenery3dStelPluginInterface::getPluginInfo() const
 	StelPluginInfo info;
 	info.id = "Scenery3d";
 	info.version = SCENERY3D_PLUGIN_VERSION;
+	info.license = SCENERY3D_PLUGIN_LICENSE;
 	info.displayedName = N_("3D Sceneries");
 	info.authors = "Georg Zotti, Simon Parzer, Peter Neubauer, Andrei Borza, Florian Schaukowitsch";
-	info.contact = "Georg.Zotti@univie.ac.at";
+	info.contact = "http://homepage.univie.ac.at/Georg.Zotti";
 	info.description = N_("<p>3D foreground renderer. Walk around, find and avoid obstructions in your garden, "
 			      "find and demonstrate possible astronomical alignments in temples, see shadows on sundials etc.</p>"
 			      "<p>To move around, press Ctrl+cursor keys. To lift eye height, use Ctrl+PgUp/PgDn. "

@@ -100,6 +100,8 @@ public:
 		//because we always draw the full background,
 		//lets skip drawing the system background
 		setAttribute(Qt::WA_OpaquePaintEvent);
+		setAttribute(Qt::WA_AcceptTouchEvents);
+		setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
 		setAutoFillBackground(false);
 	}
 
@@ -349,12 +351,10 @@ protected:
 		//important to call this, or Qt may have invalid state after we have drawn (wrong textures, etc...)
 		painter->beginNativePainting();
 
-		//fix for bug 1628072 caused by QTBUG-56798
+		//fix for bug LP:1628072 caused by QTBUG-56798
 #ifndef QT_NO_DEBUG
 		StelOpenGL::clearGLErrors();
 #endif
-
-
 		QOpenGLFunctions* gl = QOpenGLContext::currentContext()->functions();
 
 		//clear the buffer (not strictly required for us because we repaint all pixels, but should improve perf on tile-based renderers)
@@ -552,10 +552,13 @@ StelMainView::StelMainView(QSettings* settings)
 	  flagOverwriteScreenshots(false),
 	  screenShotPrefix("stellarium-"),
 	  screenShotDir(""),
-	  cursorTimeout(-1.f), flagCursorTimeout(false), maxfps(10000.f)
+	  flagCursorTimeout(false), maxfps(10000.f)
 {
 	setAttribute(Qt::WA_OpaquePaintEvent);
+	setAttribute(Qt::WA_AcceptTouchEvents);
+	setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
 	setAutoFillBackground(false);
+	setMouseTracking(true);
 
 	configuration = settings;
 	StelApp::initStatic();
@@ -564,14 +567,18 @@ StelMainView::StelMainView(QSettings* settings)
 	minFpsTimer->setTimerType(Qt::PreciseTimer);
 	minFpsTimer->setInterval(1000/minfps);
 	connect(minFpsTimer,SIGNAL(timeout()),this,SLOT(minFPSUpdate()));
-	
+
+	cursorTimeoutTimer = new QTimer(this);
+	cursorTimeoutTimer->setSingleShot(true);
+	connect(cursorTimeoutTimer, SIGNAL(timeout()), this, SLOT(hideCursor()));
+
 	// Can't create 2 StelMainView instances
 	Q_ASSERT(!singleton);
 	singleton = this;
 
 	setWindowIcon(QIcon(":/mainWindow/icon.bmp"));
 	initTitleI18n();
-	setObjectName("Mainview");
+	setObjectName("MainView");
 
 	setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
 	setFrameShape(QFrame::NoFrame);
@@ -591,13 +598,19 @@ StelMainView::StelMainView(QSettings* settings)
 	//get the desired opengl format parameters
 	QSurfaceFormat glFormat = getDesiredGLFormat();
 	// VSync control
-	QVariant vsync = configuration->value("video/vsync");
-	if(vsync.isValid() && vsync.canConvert<bool>()) // if the config parameter is not set we use system default (which should be true)
-		glFormat.setSwapInterval(vsync.toBool());
+	bool vsdef = true;
+	#ifdef Q_OS_OSX
+	// FIXME: workaround for bug LP:#1705832 (https://bugs.launchpad.net/stellarium/+bug/1705832)
+	// Qt: https://bugreports.qt.io/browse/QTBUG-53273
+	vsdef = false; // use vsync=false by default on macOS
+	#endif
+	if (configuration->value("video/vsync", vsdef).toBool())
+		glFormat.setSwapInterval(1);
+	else
+		glFormat.setSwapInterval(0);
 
 	qDebug()<<"Desired surface format: "<<glFormat;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,4,0)
 	//we set the default format to our required format, if possible
 	//this only works with Qt 5.4+
 	QSurfaceFormat defFmt = glFormat;
@@ -606,7 +619,6 @@ StelMainView::StelMainView(QSettings* settings)
 	defFmt.setStencilBufferSize(0);
 	defFmt.setDepthBufferSize(0);
 	QSurfaceFormat::setDefaultFormat(defFmt);
-#endif
 
 	//QGLWidget should set the format in constructor to prevent creating an unnecessary temporary context
 	glWidget = new StelGLWidget(glFormat, this);
@@ -631,6 +643,8 @@ StelMainView::StelMainView(QSettings* settings)
 	glWidget->makeCurrent();
 	glWidget->initializeGL();
 #endif
+	// We cannot use global mousetracking. Only if mouse is hidden!
+	//setMouseTracking(true);
 }
 
 void StelMainView::resizeEvent(QResizeEvent* event)
@@ -646,6 +660,16 @@ void StelMainView::resizeEvent(QResizeEvent* event)
 	QGraphicsView::resizeEvent(event);
 }
 
+void StelMainView::mouseMoveEvent(QMouseEvent *event)
+{
+	// Show the cursor and reset the timeout if it is active.
+	if (QGuiApplication::overrideCursor())
+		QGuiApplication::restoreOverrideCursor();
+	if (flagCursorTimeout) cursorTimeoutTimer->start();
+	QGraphicsView::mouseMoveEvent(event);
+}
+
+
 void StelMainView::focusSky() {
 	//scene()->setActiveWindow(0);
 	rootItem->setFocus();
@@ -660,14 +684,9 @@ StelMainView::~StelMainView()
 
 QSurfaceFormat StelMainView::getDesiredGLFormat() const
 {
-#if QT_VERSION < QT_VERSION_CHECK(5,4,0)
-	//default-constructed format
-	QSurfaceFormat fmt;
-#else
 	//use the default format as basis
 	QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
 	qDebug()<<"Default surface format: "<<fmt;
-#endif
 
 	//if on an GLES build, do not set the format
 #ifndef QT_OPENGL_ES_2
@@ -1274,6 +1293,22 @@ void StelMainView::drawEnded()
 	}
 }
 
+void StelMainView::setFlagCursorTimeout(bool b)
+{
+	if (b == flagCursorTimeout) return;
+	flagCursorTimeout = b;
+	if (b)
+		cursorTimeoutTimer->start();
+	else
+		cursorTimeoutTimer->stop();
+	emit flagCursorTimeoutChanged(b);
+}
+
+void StelMainView::hideCursor()
+{
+	QGuiApplication::setOverrideCursor(Qt::BlankCursor);
+}
+
 void StelMainView::minFPSUpdate()
 {
 	if(!updateQueued)
@@ -1302,7 +1337,6 @@ void StelMainView::contextDestroyed()
 
 void StelMainView::thereWasAnEvent()
 {
-	//qDebug()<<"event";
 	lastEventTimeSec = StelApp::getTotalRunTime();
 }
 
@@ -1440,7 +1474,6 @@ void StelMainView::doScreenshot(void)
 	if (!im.save(shotPath.filePath())) {
 		qWarning() << "WARNING failed to write screenshot to: " << QDir::toNativeSeparators(shotPath.filePath());
 	}
-
 	if (planetc) planetc->cloneView(true);
 }
 

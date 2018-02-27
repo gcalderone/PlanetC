@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>565</width>
-    <height>480</height>
+    <width>535</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>400</width>
-    <height>480</height>
+    <height>450</height>
    </size>
   </property>
   <layout class="QVBoxLayout" name="_2">
@@ -176,7 +176,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>24</height>
+          <height>20</height>
          </size>
         </property>
         <property name="toolTip">
@@ -201,7 +201,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>24</height>
+          <height>20</height>
          </size>
         </property>
         <property name="toolTip">
@@ -223,7 +223,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>24</height>
+          <height>20</height>
          </size>
         </property>
         <property name="toolTip">
@@ -231,6 +231,13 @@
         </property>
         <property name="text">
          <string>RTS2 telescope</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonTelescopeINDI">
+        <property name="text">
+         <string notr="true">INDI</string>
         </property>
        </widget>
       </item>
@@ -245,7 +252,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>24</height>
+          <height>20</height>
          </size>
         </property>
         <property name="text">
@@ -265,9 +272,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-283</y>
-        <width>547</width>
-        <height>603</height>
+        <y>-348</y>
+        <width>519</width>
+        <height>714</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayoutScrollArea">
@@ -378,8 +385,7 @@
                </size>
               </property>
               <property name="toolTip">
-               <string>The approximate time it takes for the signals from the telescope to reach Stellarium.
-Increase this value if the reticle is skipping.</string>
+               <string/>
               </property>
               <property name="suffix">
                <string notr="true" comment="seconds">s</string>
@@ -460,6 +466,9 @@ Increase this value if the reticle is skipping.</string>
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="TelescopeClientINDIWidget" name="INDIProperties" native="true"/>
        </item>
        <item>
         <widget class="QGroupBox" name="groupBoxDeviceSettings">
@@ -742,6 +751,66 @@ Increase this value if the reticle is skipping.</string>
             </property>
            </widget>
           </item>
+          <item row="4" column="0" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayoutRTSRefresh">
+            <item>
+             <widget class="QLabel" name="labelRTS2Refresh">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Refresh every:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="doubleSpinBoxRTS2Refresh">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="suffix">
+               <string notr="true" comment="seconds">s</string>
+              </property>
+              <property name="decimals">
+               <number>2</number>
+              </property>
+              <property name="minimum">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>10.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="value">
+               <double>0.500000000000000</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
@@ -869,6 +938,12 @@ Increase this value if the reticle is skipping.</string>
    <class>BarFrame</class>
    <extends>QFrame</extends>
    <header>Dialog.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TelescopeClientINDIWidget</class>
+   <extends>QWidget</extends>
+   <header>TelescopeClientINDIWidget.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -45,8 +45,8 @@ Q_OBJECT
 public:
 	QPoint mousePos;
   
-	BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) {
-		//PLANETC_GC
+	//PLANETC_GC BarFrame(QWidget* parent) : QFrame(parent), moving(false) {}
+	BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) { //PLANETC_GC
 		if (p == NULL) { 
 			p = this;
 			while (p) {
@@ -60,7 +60,7 @@ public:
 		        p = (QWidget*) this->parent();
 		}
 	}
-  
+
 	virtual void mousePressEvent(QMouseEvent *event);
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);

@@ -7,7 +7,7 @@ ftp://ftp.imcce.fr/pub/ephem/satel/tass17
 I (Johannes Gajdosik) have just taken the Fortran code and data
 obtained from above and rearranged it into this piece of software.
 
-I can neigther allow nor forbid the usage of the TASS 1.7 theory.
+I can neither allow nor forbid the usage of the TASS 1.7 theory.
 The copyright notice below covers not the work of Alain VIENNE and Luc DURIEZ
 but just my work, that is the compilation of the TASS 1.7 theory
 into the software supplied in this file.
@@ -66,7 +66,9 @@ extern "C" {
 #define TASS17_HYPERION  7
 #define TASS17_IAPETUS   6
 
-void GetTass17Coor(double jd,int body,double *xyz);
+// xyz and xyzdot are 3-vectors (position&speed)
+void GetTass17Coor(double jd, int body, double *xyz, double *xyzdot);
+// xyz is a 6-vector (position&speed)
 void GetTass17OsculatingCoor(const double jd0,const double jd, const int body,double *xyz);
 
 #ifdef __cplusplus

@@ -39,7 +39,7 @@ void BarFrame::mouseMoveEvent(QMouseEvent *event)
 {
 	if (!moving) return;
 	QPoint dpos = event->pos() - mousePos;
-	//QWidget* p = dynamic_cast<QWidget*>(QFrame::parent()); //PLANETC_GC
+	//PLANETC_GC QWidget* p = dynamic_cast<QWidget*>(QFrame::parent());
 	QPoint targetPos = p->pos() + dpos;
 	
 	if (p == parent()) { //PLANETC_GC

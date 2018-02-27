@@ -7,7 +7,7 @@ ftp://ftp.imcce.fr/pub/ephem/satel
 I (Johannes Gajdosik) have just taken the Fortran code and data
 obtained from above and rearranged it into this piece of software.
 
-I can neigther allow nor forbid the above theories.
+I can neither allow nor forbid the above theories.
 The copyright notice below covers just my work,
 that is the compilation of the data obtained from above
 into the software supplied in this file.
@@ -50,7 +50,7 @@ extern "C" {
    a .. semi major axis
    n = mean motion = 2*M_PI/(orbit period)
    
-   elem[0] .. unused (eigther a or n)
+   elem[0] .. either a (EllipticToRectangularA()) or n (EllipticToRectangularN())
    elem[1] .. L
    elem[2] .. K=e*cos(Omega+omega)
    elem[3] .. H=e*sin(Omega+omega)
@@ -65,6 +65,11 @@ extern "C" {
    e = excentricity
    
    Units are suspected to be: Julian days, AU, rad
+
+   Results:
+   xyz[0,1,2]=Position [AU]
+   xyz[3,4,5]=Velocity [AU/d]
+
 */
 
 void EllipticToRectangularN(double mu,const double elem[6],double dt,

@@ -111,6 +111,9 @@ void clearCache()
 // Main stellarium procedure
 int main(int argc, char **argv)
 {
+    Q_INIT_RESOURCE(mainRes);
+    Q_INIT_RESOURCE(guiRes);
+
 #ifdef Q_OS_WIN
 	// Fix for the speeding system clock bug on systems that use ACPI
 	// See http://support.microsoft.com/kb/821893
@@ -159,6 +162,9 @@ int main(int argc, char **argv)
 	// otherwise configuration/INI file parsing will be erroneous.
 	setlocale(LC_NUMERIC, "C");
 
+	// Solution for bug: https://bugs.launchpad.net/stellarium/+bug/1498616
+	qputenv("QT_HARFBUZZ", "old");
+
 	// Init the file manager
 	StelFileMgr::init();
 
@@ -191,18 +197,14 @@ int main(int argc, char **argv)
 	CLIProcessor::parseCLIArgsPreConfig(argList);
 
 	#ifdef Q_OS_WIN
-	#if QT_VERSION >= 0x050300
 	if (qApp->property("onetime_angle_mode").isValid())
 	{
 		app.setAttribute(Qt::AA_UseOpenGLES, true);
 	}
-	#endif
-	#if QT_VERSION >= 0x050400
 	if (qApp->property("onetime_mesa_mode").isValid())
 	{
 		app.setAttribute(Qt::AA_UseSoftwareOpenGL, true);
 	}
-	#endif
 	#endif
 
 	// Start logging.
@@ -248,6 +250,12 @@ int main(int argc, char **argv)
 		}
 		
 		confSettings = new QSettings(configName, StelIniFormat);
+		confSettings->setValue("video/fullscreen", false);
+		confSettings->setValue("video/screen_number", 0);
+		confSettings->setValue("video/screen_x",   0);
+		confSettings->setValue("video/screen_y",   0);
+		confSettings->setValue("video/screen_h", 800);
+		confSettings->setValue("video/screen_w", 800);
 	}
 	catch (std::runtime_error& e) {
 		qWarning() << "ERROR: Can't read/write configuration file: " << e.what();

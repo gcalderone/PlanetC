@@ -55,6 +55,7 @@ protected:
 private:
 	QStringList* listSerialPorts();
 	void initConfigurationDialog();
+	void populateToolTips();
 	
 private slots:
 	void buttonSavePressed();
@@ -64,6 +65,7 @@ private slots:
 	void toggleTypeConnection(bool);
 	void toggleTypeVirtual(bool);
 	void toggleTypeRTS2(bool);
+    void toggleTypeINDI(bool enabled);
 	
 	void deviceModelSelected(const QString&);
 	bool validateHost(QString hostName);

@@ -69,6 +69,10 @@ class StelApp : public QObject
 {
 	Q_OBJECT
 	Q_PROPERTY(bool nightMode READ getVisionModeNight WRITE setVisionModeNight NOTIFY visionNightModeChanged)
+	Q_PROPERTY(bool flagShowDecimalDegrees  READ getFlagShowDecimalDegrees  WRITE setFlagShowDecimalDegrees  NOTIFY flagShowDecimalDegreesChanged)
+	Q_PROPERTY(bool flagUseAzimuthFromSouth READ getFlagSouthAzimuthUsage   WRITE setFlagSouthAzimuthUsage   NOTIFY flagUseAzimuthFromSouthChanged)
+	Q_PROPERTY(bool flagUseCCSDesignation   READ getFlagUseCCSDesignation   WRITE setFlagUseCCSDesignation   NOTIFY flagUseCCSDesignationChanged)
+	Q_PROPERTY(bool flagUseFormattingOutput READ getFlagUseFormattingOutput WRITE setFlagUseFormattingOutput NOTIFY flagUseFormattingOutputChanged)
 
 public:
 	friend class StelAppGraphicsWidget;
@@ -107,6 +111,11 @@ public:
 	//! Get the module manager to use for accessing any module loaded in the application.
 	//! @return the module manager.
 	StelModuleMgr& getModuleMgr() {return *moduleMgr;}
+
+	//! Get the corresponding module or Q_NULLPTR if can't find it.
+	//! This is a shortcut for getModleMgr().getModule().
+	//! @return the module pointer.
+	StelModule* getModule(const QString& moduleID);
 
 	//! Get the locale manager to use for i18n & date/time localization.
 	//! @return the font manager to use for loading fonts.
@@ -232,15 +241,17 @@ public slots:
 	//! Set flag for using calculation of azimuth from south towards west (instead north towards east)
 	bool getFlagSouthAzimuthUsage() const { return flagUseAzimuthFromSouth; }
 	//! Get flag for using calculation of azimuth from south towards west (instead north towards east)
-	void setFlagSouthAzimuthUsage(bool use) { flagUseAzimuthFromSouth=use; }
+	void setFlagSouthAzimuthUsage(bool use) { flagUseAzimuthFromSouth=use; emit flagUseAzimuthFromSouthChanged(use);}
 	
-	//! Set flag for using calculation of azimuth from south towards west (as in older astronomical literature)
-	//! @deprecated Use getFlagSouthAzimuthUsage() instead.
-	bool getFlagOldAzimuthUsage() const { return getFlagSouthAzimuthUsage(); }
-	//! Get flag for using calculation of azimuth from south towards west (as in older astronomical literature)
-	//! @deprecated Use setFlagSouthAzimuthUsage() instead.
-	void setFlagOldAzimuthUsage(bool use) { setFlagSouthAzimuthUsage(use); }
+	//! Set flag for using of formatting output for coordinates
+	void setFlagUseFormattingOutput(bool b);
+	//! Get flag for using of formatting output for coordinates
+	bool getFlagUseFormattingOutput() const {return flagUseFormattingOutput;}
 
+	//! Set flag for using designations for celestial coordinate systems
+	void setFlagUseCCSDesignation(bool b);
+	//! Get flag for using designations for celestial coordinate systems
+	bool getFlagUseCCSDesignation() const {return flagUseCCSDesignation;}
 
 	//! Get the current number of frame per second.
 	//! @return the FPS averaged on the last second
@@ -271,6 +282,10 @@ public slots:
 	void quit();
 signals:
 	void visionNightModeChanged(bool);
+	void flagShowDecimalDegreesChanged(bool);
+	void flagUseAzimuthFromSouthChanged(bool);
+	void flagUseCCSDesignationChanged(bool);
+	void flagUseFormattingOutputChanged(bool);
 	void colorSchemeChanged(const QString&);
 	void languageChanged();
 
@@ -413,6 +428,8 @@ private:
 	bool flagShowDecimalDegrees;
 	// flag to indicate we want calculate azimuth from south towards west (as in old astronomical literature)
 	bool flagUseAzimuthFromSouth;
+	bool flagUseFormattingOutput;
+	bool flagUseCCSDesignation;
 #ifdef 	ENABLE_SPOUT
 	SpoutSender* spoutSender;
 #endif

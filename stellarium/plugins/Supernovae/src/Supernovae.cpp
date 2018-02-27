@@ -73,6 +73,7 @@ StelPluginInfo SupernovaeStelPluginInterface::getPluginInfo() const
 	info.contact = "alex.v.wolf@gmail.com";
 	info.description = N_("This plugin allows you to see some bright historical supernovae.");
 	info.version = SUPERNOVAE_PLUGIN_VERSION;
+	info.license = SUPERNOVAE_PLUGIN_LICENSE;
 	return info;
 }
 
@@ -85,7 +86,6 @@ Supernovae::Supernovae()
 	, downloadMgr(Q_NULLPTR)
 	, progressBar(Q_NULLPTR)
 	, updateTimer(Q_NULLPTR)
-	, messageTimer(Q_NULLPTR)
 	, updatesEnabled(false)
 	, updateFrequencyDays(0)
 {
@@ -152,13 +152,6 @@ void Supernovae::init()
 		qWarning() << "Supernovas: init error:" << e.what();
 		return;
 	}
-
-	// A timer for hiding alert messages
-	messageTimer = new QTimer(this);
-	messageTimer->setSingleShot(true);   // recurring check for update
-	messageTimer->setInterval(9000);      // 6 seconds should be enough time
-	messageTimer->stop();
-	connect(messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
 
 	// If the json file does not already exist, create it from the resource in the Qt resource
 	if(QFileInfo(sneJsonPath).exists())
@@ -594,11 +587,7 @@ void Supernovae::updateJSON(void)
 void Supernovae::updateDownloadComplete(QNetworkReply* reply)
 {
 	// check the download worked, and save the data to file if this is the case.
-	if (reply->error() != QNetworkReply::NoError)
-	{
-		qWarning() << "[Supernovae] FAILED to download" << reply->url() << " Error: " << reply->errorString();
-	}
-	else
+	if (reply->error() == QNetworkReply::NoError && reply->bytesAvailable()>0)
 	{
 		// download completed successfully.
 		QString jsonFilePath = StelFileMgr::findFile("modules/Supernovae", StelFileMgr::Flags(StelFileMgr::Writable|StelFileMgr::Directory)) + "/supernovae.json";
@@ -617,6 +606,8 @@ void Supernovae::updateDownloadComplete(QNetworkReply* reply)
 			jsonFile.close();
 		}
 	}
+	else
+		qWarning() << "[Supernovae] FAILED to download" << reply->url() << " Error: " << reply->errorString();
 
 	if (progressBar)
 	{
@@ -630,16 +621,7 @@ void Supernovae::updateDownloadComplete(QNetworkReply* reply)
 
 void Supernovae::displayMessage(const QString& message, const QString hexColor)
 {
-	messageIDs << GETSTELMODULE(LabelMgr)->labelScreen(message, 30, 30 + (20*messageIDs.count()), true, 16, hexColor);
-	messageTimer->start();
-}
-
-void Supernovae::messageTimeout(void)
-{
-	foreach(int i, messageIDs)
-	{
-		GETSTELMODULE(LabelMgr)->deleteLabel(i);
-	}
+	messageIDs << GETSTELMODULE(LabelMgr)->labelScreen(message, 30, 30 + (20*messageIDs.count()), true, 16, hexColor, false, 9000);
 }
 
 QString Supernovae::getSupernovaeList() const

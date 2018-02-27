@@ -115,7 +115,10 @@ QStringList* TelescopeConfigurationDialog::listSerialPorts()
 void TelescopeConfigurationDialog::retranslate()
 {
 	if (dialog)
+	{
 		ui->retranslateUi(dialog);
+		populateToolTips();
+	}
 }
 
 // Initialize the dialog widgets and connect the signals/slots
@@ -134,6 +137,7 @@ void TelescopeConfigurationDialog::createDialogContent()
 	connect(ui->radioButtonTelescopeConnection, SIGNAL(toggled(bool)), this, SLOT(toggleTypeConnection(bool)));
 	connect(ui->radioButtonTelescopeVirtual, SIGNAL(toggled(bool)), this, SLOT(toggleTypeVirtual(bool)));
 	connect(ui->radioButtonTelescopeRTS2, SIGNAL(toggled(bool)), this, SLOT(toggleTypeRTS2(bool)));
+	connect(ui->radioButtonTelescopeINDI, SIGNAL(toggled(bool)), this, SLOT(toggleTypeINDI(bool)));
 	
 	connect(ui->pushButtonSave, SIGNAL(clicked()), this, SLOT(buttonSavePressed()));
 	connect(ui->pushButtonDiscard, SIGNAL(clicked()), this, SLOT(buttonDiscardPressed()));
@@ -145,6 +149,14 @@ void TelescopeConfigurationDialog::createDialogContent()
 	ui->lineEditHostName->setValidator(hostNameValidator);
 	ui->lineEditCircleList->setValidator(circleListValidator);
 	ui->comboSerialPort->setValidator(serialPortValidator);
+
+	populateToolTips();
+}
+
+void TelescopeConfigurationDialog::populateToolTips()
+{
+	ui->doubleSpinBoxTelescopeDelay->setToolTip(QString("<p>%1</p>").arg(q_("The approximate time it takes for the signals from the telescope to reach Stellarium. Increase this value if the reticle is skipping.")));
+	ui->doubleSpinBoxRTS2Refresh->setToolTip(QString("<p>%1</p>").arg(q_("Refresh rate of the RTS2 telescope. Delay before sending next telescope status request. The default value of 0.5 second works fine with most setups.")));
 }
 
 //Set the configuration panel in a predictable state
@@ -153,6 +165,7 @@ void TelescopeConfigurationDialog::initConfigurationDialog()
 	ui->groupBoxConnectionSettings->hide();
 	ui->groupBoxDeviceSettings->hide();
 	ui->groupBoxRTS2Settings->hide();
+    ui->INDIProperties->hide();
 
 	//Reusing code used in both methods that call this one
 	deviceModelNames = telescopeManager->getDeviceModels().keys();
@@ -233,7 +246,8 @@ void TelescopeConfigurationDialog::initExistingTelescopeConfiguration(int slot)
 	QString rts2Url;
 	QString rts2Username;
 	QString rts2Password;
-	if(!telescopeManager->getTelescopeAtSlot(slot, connectionType, name, equinox, host, portTCP, delay, connectAtStartup, circles, deviceModelName, serialPortName, rts2Url, rts2Username, rts2Password))
+	int rts2Refresh;
+	if(!telescopeManager->getTelescopeAtSlot(slot, connectionType, name, equinox, host, portTCP, delay, connectAtStartup, circles, deviceModelName, serialPortName, rts2Url, rts2Username, rts2Password, rts2Refresh))
 	{
 		//TODO: Add debug
 		return;
@@ -241,7 +255,7 @@ void TelescopeConfigurationDialog::initExistingTelescopeConfiguration(int slot)
 	
 	ui->lineEditTelescopeName->setText(name);
 	
-	if(!deviceModelName.isEmpty())
+    if(connectionType == ConnectionLocal && !deviceModelName.isEmpty())
 	{
 		ui->radioButtonTelescopeLocal->setChecked(true);
 		
@@ -266,16 +280,16 @@ void TelescopeConfigurationDialog::initExistingTelescopeConfiguration(int slot)
 	else if (connectionType == ConnectionRemote)
 	{
 		ui->radioButtonTelescopeConnection->setChecked(true);//Calls toggleTypeConnection(true)
-		ui->lineEditHostName->setText(host);
+		ui->lineEditHostName->setText(host);		
 	}
 	else if (connectionType == ConnectionLocal)
 	{
 		ui->radioButtonTelescopeConnection->setChecked(true);
-		ui->lineEditHostName->setText("localhost");
+		ui->lineEditHostName->setText("localhost");		
 	}
 	else if (connectionType == ConnectionVirtual)
 	{
-		ui->radioButtonTelescopeVirtual->setChecked(true);
+		ui->radioButtonTelescopeVirtual->setChecked(true);	
 	}
 	else if (connectionType == ConnectionRTS2)
 	{
@@ -283,6 +297,14 @@ void TelescopeConfigurationDialog::initExistingTelescopeConfiguration(int slot)
 		ui->lineEditRTS2Url->setText(rts2Url);
 		ui->lineEditRTS2Username->setText(rts2Username);
 		ui->lineEditRTS2Password->setText(rts2Password);
+		ui->doubleSpinBoxRTS2Refresh->setValue(SECONDS_FROM_MICROSECONDS(rts2Refresh));
+	}
+	else if (connectionType == ConnectionINDI)
+	{
+		ui->radioButtonTelescopeINDI->setChecked(true);
+        ui->INDIProperties->setHost(host);
+        ui->INDIProperties->setPort(portTCP);
+        ui->INDIProperties->setSelectedDevice(deviceModelName);
 	}
 
 	//Equinox
@@ -373,7 +395,12 @@ void TelescopeConfigurationDialog::toggleTypeRTS2(bool isChecked)
 	else
 	{
 		ui->groupBoxRTS2Settings->hide();
-	}
+    }
+}
+
+void TelescopeConfigurationDialog::toggleTypeINDI(bool enabled)
+{
+    ui->INDIProperties->setVisible(enabled);
 }
 
 void TelescopeConfigurationDialog::buttonSavePressed()
@@ -444,7 +471,12 @@ void TelescopeConfigurationDialog::buttonSavePressed()
 	else if (ui->radioButtonTelescopeRTS2->isChecked())
 	{
 		type = ConnectionRTS2;
-		telescopeManager->addTelescopeAtSlot(configuredSlot, type, name, equinox, host, portTCP, delay, connectAtStartup, circles, QString(), QString(), ui->lineEditRTS2Url->text(), ui->lineEditRTS2Username->text(), ui->lineEditRTS2Password->text());
+		telescopeManager->addTelescopeAtSlot(configuredSlot, type, name, equinox, host, portTCP, delay, connectAtStartup, circles, QString(), QString(), ui->lineEditRTS2Url->text(), ui->lineEditRTS2Username->text(), ui->lineEditRTS2Password->text(), MICROSECONDS_FROM_SECONDS(ui->doubleSpinBoxRTS2Refresh->value()));
+	}
+	else if (ui->radioButtonTelescopeINDI->isChecked())
+	{
+		type = ConnectionINDI;
+        telescopeManager->addTelescopeAtSlot(configuredSlot, type, name, equinox, ui->INDIProperties->host(), ui->INDIProperties->port(), delay, connectAtStartup, circles, ui->INDIProperties->selectedDevice());
 	}
 	
 	emit changesSaved(name, type);

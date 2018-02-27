@@ -45,13 +45,16 @@ typedef struct
 	int discovered;			//! Exoplanet discovered year
 	QString pclass;			//! Exoplanet classification from host star spectral type (F, G, K, M), habitable zone (hot, warm, cold) and size (miniterran, subterran, terran, superterran, jovian, neptunian)
 	int EqTemp;			//! Exoplanet equilibrium temperature in kelvins (K) assuming a 0.3 bond albedo (Earth = 255 K).
+	int flux;			//! Average stellar flux of the planet in Earth fluxes (Earth = 1.0 SE).
 	int ESI;			//! Exoplanet Earth Similarity Index
+	QString detectionMethod;	//! Method of detection of exoplanet
+	bool conservative;		//! Conservative sample
 } exoplanetData;
 
 class StelPainter;
 
 //! @class Exoplanet
-//! A exoplanet object represents one pulsar on the sky.
+//! A exoplanet object represents one planetary system on the sky.
 //! Details about the exoplanets are passed using a QVariant which contains
 //! a map of data from the json file.
 //! @ingroup exoplanets
@@ -103,9 +106,9 @@ public:
 	}
 	//! Get the visual magnitude
 	virtual float getVMagnitude(const StelCore* core) const;
-	//! Get the angular size of pulsar
+	//! Get the angular size of host star
 	virtual double getAngularSize(const StelCore* core) const;
-	//! Get the localized name of pulsar
+	//! Get the localized name of host star
 	virtual QString getNameI18n(void) const;
 	//! Get the english name
 	virtual QString getEnglishName(void) const;
@@ -193,9 +196,13 @@ private:
 	static bool distributionMode;
 	static bool timelineMode;
 	static bool habitableMode;
-	static bool showDesignations;
+	static bool showDesignations;	
+	static int temperatureScaleID;
 
 	void draw(StelCore* core, StelPainter *painter);
+
+	QString getTemperatureScaleUnit() const;
+	float getTemperature(float temperature) const;
 
 	int EPCount;
 	int PHEPCount;

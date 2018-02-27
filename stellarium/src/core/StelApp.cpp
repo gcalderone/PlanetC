@@ -34,6 +34,7 @@
 #include "ZodiacalLight.hpp"
 #include "LabelMgr.hpp"
 #include "SolarSystem.hpp"
+#include "NomenclatureMgr.hpp"
 #include "SporadicMeteorMgr.hpp"
 #include "StarMgr.hpp"
 #include "StelIniParser.hpp"
@@ -251,6 +252,8 @@ StelApp::StelApp(StelMainView *parent)
 	, gl(Q_NULLPTR)
 	, flagShowDecimalDegrees(false)
 	, flagUseAzimuthFromSouth(false)
+	, flagUseFormattingOutput(false)
+	, flagUseCCSDesignation(false)
 	#ifdef ENABLE_SPOUT
 	, spoutSender(Q_NULLPTR)
 	#endif
@@ -409,6 +412,8 @@ void StelApp::init(QSettings* conf)
 	confSettings = conf;
 
 	devicePixelsPerPixel = QOpenGLContext::currentContext()->screen()->devicePixelRatio();
+	if (devicePixelsPerPixel>1)
+		qDebug() << "Detected a high resolution device! Device pixel ratio:" << devicePixelsPerPixel;
 
 	setBaseFontSize(confSettings->value("gui/base_font_size", 13).toInt());
 	
@@ -440,6 +445,10 @@ void StelApp::init(QSettings* conf)
 	planetLocationMgr = new StelLocationMgr();
 	actionMgr = new StelActionMgr();
 
+	// register non-modules for StelProperty tracking
+	propMgr->registerObject(this);
+	propMgr->registerObject(mainWin);
+
 	// Stel Object Data Base manager
 	stelObjectMgr = new StelObjectMgr();
 	stelObjectMgr->init();
@@ -451,6 +460,11 @@ void StelApp::init(QSettings* conf)
 	SolarSystem* ssystem = new SolarSystem();
 	ssystem->init();
 	getModuleMgr().registerModule(ssystem);
+
+	// Init the nomenclature for Solar system bodies
+	NomenclatureMgr* nomenclature = new NomenclatureMgr();
+	nomenclature->init();
+	getModuleMgr().registerModule(nomenclature);
 
 	// Load hipparcos stars & names
 	StarMgr* hip_stars = new StarMgr();
@@ -537,7 +551,7 @@ void StelApp::init(QSettings* conf)
 
 	// Initialisation of the color scheme
 	emit colorSchemeChanged("color");
-	setVisionModeNight(confSettings->value("viewing/flag_night").toBool());
+	setVisionModeNight(confSettings->value("viewing/flag_night", false).toBool());
 
 	// Enable viewport effect at startup if he set
 	setViewportEffect(confSettings->value("video/viewport_effect", "none").toString());
@@ -551,6 +565,8 @@ void StelApp::init(QSettings* conf)
 
 	setFlagShowDecimalDegrees(confSettings->value("gui/flag_show_decimal_degrees", false).toBool());
 	setFlagSouthAzimuthUsage(confSettings->value("gui/flag_use_azimuth_from_south", false).toBool());
+	setFlagUseFormattingOutput(confSettings->value("gui/flag_use_formatting_output", false).toBool());
+	setFlagUseCCSDesignation(confSettings->value("gui/flag_use_ccs_designations", false).toBool());
 
 	// Animation
 	animationScale = confSettings->value("gui/pointer_animation_speed", 1.f).toFloat();
@@ -678,7 +694,7 @@ void StelApp::update(double deltaTime)
 
 void StelApp::prepareRenderBuffer()
 {
-	//if (!viewportEffect) return; //PLANETC_GC
+	//PLANETC_GC if (!viewportEffect) return;
 	if (!renderBuffer)
 	{
 		StelProjector::StelProjectorParams params = core->getCurrentStelProjectorParams();
@@ -693,7 +709,6 @@ void StelApp::applyRenderBuffer(GLuint drawFbo)
 {
 	if (!renderBuffer) return;
 	GL(gl->glBindFramebuffer(GL_FRAMEBUFFER, drawFbo));
-
 	//PLANETC_GC
 	if (viewportEffect) //Draw using viewportEffect
 		viewportEffect->paintViewportBuffer(renderBuffer);
@@ -891,7 +906,29 @@ void StelApp::setVisionModeNight(bool b)
 
 void StelApp::setFlagShowDecimalDegrees(bool b)
 {
-	flagShowDecimalDegrees = b;
+	if (flagShowDecimalDegrees!=b)
+	{
+		flagShowDecimalDegrees = b;
+		emit flagShowDecimalDegreesChanged(b);
+	}
+}
+
+void StelApp::setFlagUseFormattingOutput(bool b)
+{
+	if (flagUseFormattingOutput!=b)
+	{
+		flagUseFormattingOutput = b;
+		emit flagUseFormattingOutputChanged(b);
+	}
+}
+
+void StelApp::setFlagUseCCSDesignation(bool b)
+{
+	if (flagUseCCSDesignation!=b)
+	{
+		flagUseCCSDesignation = b;
+		emit flagUseCCSDesignationChanged(b);
+	}
 }
 
 // Update translations and font for sky everywhere in the program
@@ -1005,4 +1042,9 @@ void StelApp::dumpModuleActionPriorities(StelModule::StelModuleActionName action
 		module->draw(core);
 		qDebug() << " -- " << module->getCallOrder(actionName) << "Module: " << module->objectName();
 	}
+}
+
+StelModule* StelApp::getModule(const QString& moduleID)
+{
+	return getModuleMgr().getModule(moduleID);
 }

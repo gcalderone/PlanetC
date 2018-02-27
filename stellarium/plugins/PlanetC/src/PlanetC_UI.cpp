@@ -1,7 +1,7 @@
 /*
  * Planetarium Control (PlanetC) plug-in for Stellarium
  *
- * Copyright (C) 2016-2017 Giorgio Calderone
+ * Copyright (C) 2016-2018 Giorgio Calderone
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -124,7 +124,8 @@ void PlanetC_GLWidget::cloneView(QOpenGLFramebufferObject* cloneFBO)
 	gl->glEnable(GL_TEXTURE_2D);
 	//end resizeGL
 
-	gl->glClearColor(0, 0, 0.05, 0);
+	//gl->glClearColor(0, 0, 0.05, 0);
+	gl->glClearColor(0, 0, 0, 0);
 	gl->glClear(GL_COLOR_BUFFER_BIT);
 	gl->glBindTexture(GL_TEXTURE_2D, cloneFBO->texture());
 	gl->glColor3f(1, 1, 1);
@@ -457,11 +458,11 @@ void PlanetC_UI::setDomeMode(bool b)
 
 
 	domeMode = b;
+	enableMouseKeys(false);
 
 	if(b)
 	{
 		planetc->runScript("planetc_initializeDomeMode(\"" + pOpt->getStartDate() + "\");");
-		enableMouseKeys(false);
 		stel.landscape->setFlagCardinalsPoints(false);
 		ui->btnMouseKeys->setChecked(false);
 		ui->btnTrack->setChecked(false);
@@ -1508,7 +1509,7 @@ void PlanetC_UI::autoZoom()
 	{
 		sprintf(buf, "planetc_AutoZoomOut(%f, %f);", timeMove, timeZoom);
 		planetc->runScript(buf);
-
+		resetView();
 		ui->btnZoom->setText("Auto zoom in");
 	}
 	stel.view->setMinFps(PLANETC_MINFPS);
@@ -1630,7 +1631,7 @@ void PlanetC_UI::refreshUserDirList(QListWidget* list, QString path)
 	list->setSortingEnabled(true);
 	path = PlanetC::filePath(path);
 	QDirIterator it(path, QStringList() << "*",
-	                QDir::Files | QDir::NoSymLinks, QDirIterator::Subdirectories);
+	                QDir::Files, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
 	while(it.hasNext())
 		list->addItem(it.next().mid(path.length()+1));
 }

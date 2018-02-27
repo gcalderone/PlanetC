@@ -42,6 +42,8 @@
 #include "StelProgressController.hpp"
 #include "StelUtils.hpp"
 
+#include "external/qtcompress/qzipreader.h"
+
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QKeyEvent>
@@ -52,6 +54,7 @@
 #include <QVariantMap>
 #include <QVariant>
 #include <QDir>
+#include <QTemporaryFile>
 
 StelModule* SatellitesStelPluginInterface::getStelModule() const
 {
@@ -66,10 +69,11 @@ StelPluginInfo SatellitesStelPluginInterface::getPluginInfo() const
 	StelPluginInfo info;
 	info.id = "Satellites";
 	info.displayedName = N_("Satellites");
-	info.authors = "Matthew Gates, Jose Luis Canales, Bogdan Marinov";
+	info.authors = "Matthew Gates, Jose Luis Canales";
 	info.contact = "http://stellarium.org/";
 	info.description = N_("Prediction of artificial satellite positions in Earth orbit based on NORAD TLE data");
 	info.version = SATELLITES_PLUGIN_VERSION;
+	info.license = SATELLITES_PLUGIN_LICENSE;
 	return info;
 }
 
@@ -88,7 +92,6 @@ Satellites::Satellites()
 	, autoAddEnabled(false)
 	, autoRemoveEnabled(false)
 	, updateFrequencyHours(0)
-	, messageTimer(Q_NULLPTR)
 	, iridiumFlaresPredictionDepth(7)
 {
 	setObjectName("Satellites");
@@ -162,13 +165,6 @@ void Satellites::init()
 		qWarning() << "[Satellites] init error: " << e.what();
 		return;
 	}
-
-	// A timer for hiding alert messages
-	messageTimer = new QTimer(this);
-	messageTimer->setSingleShot(true);   // recurring check for update
-	messageTimer->setInterval(9000);      // 6 seconds should be enough time
-	messageTimer->stop();
-	connect(messageTimer, SIGNAL(timeout()), this, SLOT(hideMessages()));
 
 	// If the json file does not already exist, create it from the resource in the QT resource
 	if(QFileInfo(catalogPath).exists())
@@ -556,7 +552,10 @@ void Satellites::restoreDefaultSettings()
 	     << "http://www.celestrak.com/NORAD/elements/geodetic.txt"
 	     << "http://www.celestrak.com/NORAD/elements/radar.txt"
 	     << "http://www.celestrak.com/NORAD/elements/cubesat.txt"
-	     << "http://www.celestrak.com/NORAD/elements/other.txt";
+	     << "http://www.celestrak.com/NORAD/elements/other.txt"
+	     << "https://www.amsat.org/amsat/ftp/keps/current/nasabare.txt"
+	     << "1,https://www.prismnet.com/~mmccants/tles/classfd.zip";
+
 	saveTleSources(urls);
 }
 
@@ -1248,13 +1247,7 @@ void Satellites::updateFromOnlineSources()
 void Satellites::saveDownloadedUpdate(QNetworkReply* reply)
 {
 	// check the download worked, and save the data to file if this is the case.
-	if (reply->error() != QNetworkReply::NoError)
-	{
-		qWarning() << "[Satellites] FAILED to download"
-		           << reply->url().toString(QUrl::RemoveUserInfo)
-		           << "Error:" << reply->errorString();
-	}
-	else
+	if (reply->error() == QNetworkReply::NoError && reply->bytesAvailable()>0)
 	{
 		// download completed successfully.
 		QString name = QString("tle%1.txt").arg(numberDownloadsComplete);
@@ -1263,10 +1256,44 @@ void Satellites::saveDownloadedUpdate(QNetworkReply* reply)
 		QFile* tmpFile = new QFile(path, this);
 		if (tmpFile->exists())
 			tmpFile->remove();
-		
+
 		if (tmpFile->open(QIODevice::WriteOnly | QIODevice::Text))
 		{
-			tmpFile->write(reply->readAll());
+			QByteArray fd = reply->readAll();
+			// qWarning() << "[Satellites] Processing an URL:" << reply->url().toString();
+			if (reply->url().toString().contains(".zip", Qt::CaseInsensitive))
+			{
+				QTemporaryFile zip;
+				if (zip.open())
+				{
+					// qWarning() << "[Satellites] Processing a ZIP archive...";
+					zip.write(fd);
+					zip.close();
+					QString archive = zip.fileName();
+					QByteArray data;
+
+					Stel::QZipReader reader(archive);
+					if (reader.status() != Stel::QZipReader::NoError)
+						qWarning() << "[Satellites] Unable to open as a ZIP archive";
+					else
+					{
+						QList<Stel::QZipReader::FileInfo> infoList = reader.fileInfoList();
+						foreach(Stel::QZipReader::FileInfo info, infoList)
+						{
+							// qWarning() << "[Satellites] Processing:" << info.filePath;
+							if (info.isFile)
+								data.append(reader.fileData(info.filePath));
+						}
+						// qWarning() << "[Satellites] Extracted data:" << data;
+						fd = data;
+					}
+					reader.close();
+					zip.remove();
+				}
+				else
+					qWarning() << "[Satellites] Unable to open a temporary file";
+			}
+			tmpFile->write(fd);
 			tmpFile->close();
 			
 			// The reply URL can be different form the requested one...
@@ -1290,6 +1317,9 @@ void Satellites::saveDownloadedUpdate(QNetworkReply* reply)
 			           << tmpFile->errorString();
 		}
 	}
+	else
+		qWarning() << "[Satellites] FAILED to download" << reply->url().toString(QUrl::RemoveUserInfo) << "Error:" << reply->errorString();
+
 	numberDownloadsComplete++;
 	if (progressBar)
 		progressBar->setValue(numberDownloadsComplete);
@@ -1352,17 +1382,9 @@ void Satellites::recalculateOrbitLines(void)
 
 void Satellites::displayMessage(const QString& message, const QString hexColor)
 {
-	messageIDs << GETSTELMODULE(LabelMgr)->labelScreen(message, 30, 30 + (20*messageIDs.count()), true, 16, hexColor);
-	messageTimer->start();
+	messageIDs << GETSTELMODULE(LabelMgr)->labelScreen(message, 30, 30 + (20*messageIDs.count()), true, 16, hexColor, false, 9000);
 }
 
-void Satellites::hideMessages()
-{
-	foreach(const int& id, messageIDs)
-	{
-		GETSTELMODULE(LabelMgr)->deleteLabel(id);
-	}
-}
 
 void Satellites::saveCatalog(QString path)
 {
@@ -2037,11 +2059,6 @@ void Satellites::translations()
 	// TRANSLATORS: Satellite group: Satellites belonging to the space observatories
 	N_("observatory");
 	
-	/* For copy/paste:
-	// TRANSLATORS: Satellite group: 
-	N_("");
-	*/
-	
 	// Satellite descriptions - bright and/or famous objects
 	// Just A FEW objects please! (I'm looking at you, Alex!)
 	// TRANSLATORS: Satellite description. "Hubble" is a person's name.
@@ -2067,7 +2084,7 @@ void Satellites::translations()
 	// TRANSLATORS: Satellite name: International Gamma-Ray Astrophysics Laboratory (INTEGRAL)
 	N_("INTEGRAL");
 	// TRANSLATORS: China's first space station name
-	N_("TIANGONG 1");	
+	N_("TIANGONG 1");
 
 #endif
 }

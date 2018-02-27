@@ -6,7 +6,7 @@ ftp://ftp.imcce.fr/pub/ephem/planets/vsop87
 I (Johannes Gajdosik) have just taken the data obtained from above
 (VSOP87.mer,...,VSOP87.nep) and rearranged it into this piece of software.
 
-I can neigther allow nor forbid the usage of VSOP87.
+I can neither allow nor forbid the usage of VSOP87.
 The copyright notice below covers not the work of Bretagnon P. and Francou G.
 but just my work, that is the compilation of the VSOP87 data
 into the software supplied in this file.
@@ -137263,7 +137263,7 @@ void AccumulateVsop87Terms(const unsigned char *instructions,
 }
 
 static
-void CalcVsop87Elem(const double t,double elem[8*6]) {
+void CalcVsop87Elem(const double t,double elem[8*6], void *user) {
   unsigned int i;
   double lambda[12];
   double cos_sin_lambda[203*4];
@@ -137317,7 +137317,10 @@ void CalcVsop87Elem(const double t,double elem[8*6]) {
 */
 }
 
-  /* dirty caching in static variables */
+/* dirty caching in static variables
+   If you ever want to allow parallel execution,
+   make a struct from these and malloc such structs and add pointer arguments to the calls as needed.
+*/
 #define VSOP87_DIM (8*6)
 static double t_0 = -1e100;
 static double t_1 = -1e100;
@@ -137335,8 +137338,7 @@ void GetVsop87Coor(double jd,int body,double *xyz) {
   GetVsop87OsculatingCoor(jd,jd,body,xyz);
 }
 
-void GetVsop87OsculatingCoor(const double jd0,const double jd,
-							 const int body,double *xyz) {
+void GetVsop87OsculatingCoor(const double jd0,const double jd,const int body,double *xyz) {
   if (jd0 != vsop87_jd0) {
 	const double t0 = (jd0 - 2451545.0) / 365250.0;
 	vsop87_jd0 = jd0;
@@ -137345,7 +137347,8 @@ void GetVsop87OsculatingCoor(const double jd0,const double jd,
 							 &CalcVsop87Elem,DELTA_T,
 							 &t_0,vsop87_elem_0,
 							 &t_1,vsop87_elem_1,
-							 &t_2,vsop87_elem_2);
+							 &t_2,vsop87_elem_2,
+							 0);
   }
   EllipticToRectangularA(vsop87_mu[body],vsop87_elem+(body*6),jd-jd0,xyz);
 }

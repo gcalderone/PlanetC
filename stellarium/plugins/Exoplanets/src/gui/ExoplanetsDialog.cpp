@@ -70,6 +70,7 @@ void ExoplanetsDialog::retranslate()
 		setInfoHtml();
 		setWebsitesHtml();
 		populateDiagramsList();
+		populateTemperatureScales();
 	}
 }
 
@@ -112,6 +113,12 @@ void ExoplanetsDialog::createDialogContent()
 	// if the state didn't change, setUpdatesEnabled will not be called, so we force it
 	setUpdatesEnabled(ui->internetUpdatesCheckbox->checkState());
 
+	colorButton(ui->exoplanetMarkerColor,		ep->getMarkerColor(false));
+	colorButton(ui->habitableExoplanetMarkerColor,	ep->getMarkerColor(true));
+
+	connect(ui->exoplanetMarkerColor,		SIGNAL(released()), this, SLOT(askExoplanetsMarkerColor()));
+	connect(ui->habitableExoplanetMarkerColor,	SIGNAL(released()), this, SLOT(askHabitableExoplanetsMarkerColor()));
+
 	updateTimer = new QTimer(this);
 	connect(updateTimer, SIGNAL(timeout()), this, SLOT(refreshUpdateValues()));
 	updateTimer->start(7000);
@@ -122,6 +129,16 @@ void ExoplanetsDialog::createDialogContent()
 	connect(ui->restoreDefaultsButton, SIGNAL(clicked()), this, SLOT(restoreDefaults()));
 	connect(ui->saveSettingsButton, SIGNAL(clicked()), this, SLOT(saveSettings()));
 	connect(ui->plotDiagram, SIGNAL(clicked()), this, SLOT(drawDiagram()));
+
+	populateTemperatureScales();
+	int idx = ui->temperatureScaleComboBox->findData(ep->getCurrentTemperatureScaleKey(), Qt::UserRole, Qt::MatchCaseSensitive);
+	if (idx==-1)
+	{
+		// Use Celsius as default
+		idx = ui->temperatureScaleComboBox->findData(QVariant("Celsius"), Qt::UserRole, Qt::MatchCaseSensitive);
+	}
+	ui->temperatureScaleComboBox->setCurrentIndex(idx);
+	connect(ui->temperatureScaleComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setTemperatureScale(int)));
 
 	// About & Info tabs
 	setAboutHtml();
@@ -135,7 +152,7 @@ void ExoplanetsDialog::createDialogContent()
 		ui->websitesTextBrowser->document()->setDefaultStyleSheet(QString(gui->getStelStyle().htmlStyleSheet));
 	}
 
-	populateDiagramsList();
+	populateDiagramsList();	
 	updateGuiFromSettings();
 }
 
@@ -144,6 +161,7 @@ void ExoplanetsDialog::setAboutHtml(void)
 	QString html = "<html><head></head><body>";
 	html += "<h2>" + q_("Exoplanets Plug-in") + "</h2><table width=\"90%\">";
 	html += "<tr width=\"30%\"><td><strong>" + q_("Version") + ":</strong></td><td>" + EXOPLANETS_PLUGIN_VERSION + "</td></tr>";
+	html += "<tr><td><strong>" + q_("License") + ":</strong></td><td>" + EXOPLANETS_PLUGIN_LICENSE + "</td></tr>";
 	html += "<tr><td><strong>" + q_("Author") + ":</strong></td><td>Alexander Wolf &lt;alex.v.wolf@gmail.com&gt;</td></tr></table>";
 
 	html += "<p>" + QString(q_("This plugin plots the position of stars with exoplanets. Exoplanets data is derived from \"%1The Extrasolar Planets Encyclopaedia%2\"")).arg("<a href=\"http://exoplanet.eu/\">").arg("</a>") + ". ";
@@ -178,10 +196,22 @@ void ExoplanetsDialog::setInfoHtml(void)
 
 	QString html = "<html><head></head><body>";
 	html += "<h2>" + q_("Potential habitable exoplanets") + "</h2>";
-	html += QString("<p>%1</p>").arg(q_("This plugin can display potential habitable exoplanets (orange marker) and some information about those planets."));
-	html += QString("<p><b>%1</b> &mdash; %2</p>").arg(q_("Planetary Class")).arg(q_("Planet classification from host star spectral type (F, G, K, M), habitable zone (hot, warm, cold) and size (miniterran, subterran, terran, superterran, jovian, neptunian) (Earth = G-Warm Terran)."));
-	html += QString("<p><b><a href='http://lasp.colorado.edu/~bagenal/3720/CLASS6/6EquilibriumTemp.html'>%1</a></b> &mdash; %2</p>").arg(q_("Equilibrium Temperature")).arg(q_("The planetary equilibrium temperature is a theoretical temperature in (°C) that the planet would be at when considered simply as if it were a black body being heated only by its parent star (assuming a 0.3 bond albedo). As example the planetary equilibrium temperature of Earth is -18.15°C (255 K)."));
-	html += QString("<p><b><a href='http://phl.upr.edu/projects/earth-similarity-index-esi'>%1</a></b> &mdash; %2</p>").arg(q_("Earth Similarity Index (ESI)")).arg(q_("Similarity to Earth on a scale from 0 to 1, with 1 being the most Earth-like. ESI depends on the planet's radius, density, escape velocity, and surface temperature."));
+	html += QString("<p>%1 %2</p>")
+			.arg(q_("This plugin can display potential habitable exoplanets (orange marker) and some information about those planets."))
+			.arg(q_("Extra info for the optimistic samples of potentially habitable planets mark by italic text."));
+	html += QString("<p><b>%1</b> &mdash; %2</p>")
+			.arg(q_("Planetary Class"))
+			.arg(q_("Planet classification from host star spectral type (F, G, K, M), habitable zone (hot, warm, cold) and size (miniterran, subterran, terran, superterran, jovian, neptunian) (Earth = G-Warm Terran)."));
+	html += QString("<p><b><a href='http://lasp.colorado.edu/~bagenal/3720/CLASS6/6EquilibriumTemp.html'>%1</a></b> &mdash; %2 %3</p>")
+			.arg(q_("Equilibrium Temperature"))
+			.arg(q_("The planetary equilibrium temperature is a theoretical temperature in (°C) that the planet would be at when considered simply as if it were a black body being heated only by its parent star (assuming a 0.3 bond albedo). As example the planetary equilibrium temperature of Earth is -18.15°C (255 K)."))
+			.arg(q_("Actual surface temperatures are expected to be larger than the equilibrium temperature depending on the atmosphere of the planets, which are currently unknown (e.g. Earth mean global surface temperature is about 288 K or 15°C)."));
+	html += QString("<p><b>%1</b> &mdash; %2</p>")
+			.arg(q_("Flux"))
+			.arg(q_("Average stellar flux of the planet in Earth fluxes (Earth = 1.0 S<sub>E</sub>)."));
+	html += QString("<p><b><a href='http://phl.upr.edu/projects/earth-similarity-index-esi'>%1</a></b> &mdash; %2</p>")
+			.arg(q_("Earth Similarity Index (ESI)"))
+			.arg(q_("Similarity to Earth on a scale from 0 to 1, with 1 being the most Earth-like. ESI depends on the planet's radius, density, escape velocity, and surface temperature."));
 	html += "<h2>" + q_("Proper names") + "</h2>";
 	html += "<p>" + q_("In December 2015, the International Astronomical Union (IAU) has officially approved names for several exoplanets after a public vote.") + "</p><ul>";
 	html += QString("<li><strong>%1</strong><sup>*</sup> (%2) &mdash; %3<sup>1</sup></li>").arg(trans.qtranslate("Veritate"), "14 And", q_("From the latin <em>Veritas</em>, truth. The ablative form means <em>where there is truth</em>."));
@@ -302,9 +332,15 @@ void ExoplanetsDialog::refreshUpdateValues(void)
 	else if (secondsToUpdate <= 60)
 		ui->nextUpdateLabel->setText(q_("Next update: < 1 minute"));
 	else if (secondsToUpdate < 3600)
-		ui->nextUpdateLabel->setText(QString(q_("Next update: %1 minutes")).arg((secondsToUpdate/60)+1));
+	{
+		int n = (secondsToUpdate/60)+1;
+		ui->nextUpdateLabel->setText(qn_("Next update: %1 minute(s)", n).arg(n));
+	}
 	else
-		ui->nextUpdateLabel->setText(QString(q_("Next update: %1 hours")).arg((secondsToUpdate/3600)+1));
+	{
+		int n = (secondsToUpdate/3600)+1;
+		ui->nextUpdateLabel->setText(qn_("Next update: %1 hour(s)", n).arg(n));
+	}
 }
 
 void ExoplanetsDialog::setUpdateValues(int hours)
@@ -531,4 +567,72 @@ void ExoplanetsDialog::populateDiagramsList()
 	axisY->setCurrentIndex(indexY);
 	axisX->blockSignals(false);
 	axisY->blockSignals(false);
+}
+
+void ExoplanetsDialog::askExoplanetsMarkerColor()
+{
+	Vec3f vColor = ep->getMarkerColor(false);
+	QColor color(0,0,0);
+	color.setRgbF(vColor.v[0], vColor.v[1], vColor.v[2]);
+	QColor c = QColorDialog::getColor(color, Q_NULLPTR, q_(ui->exoplanetMarkerColor->toolTip()));
+	if (c.isValid())
+	{
+		vColor = Vec3f(c.redF(), c.greenF(), c.blueF());
+		ep->setMarkerColor(vColor, false);
+		ui->exoplanetMarkerColor->setStyleSheet("QToolButton { background-color:" + c.name() + "; }");
+	}
+}
+
+void ExoplanetsDialog::askHabitableExoplanetsMarkerColor()
+{
+	Vec3f vColor = ep->getMarkerColor(true);
+	QColor color(0,0,0);
+	color.setRgbF(vColor.v[0], vColor.v[1], vColor.v[2]);
+	QColor c = QColorDialog::getColor(color, Q_NULLPTR, q_(ui->habitableExoplanetMarkerColor->toolTip()));
+	if (c.isValid())
+	{
+		vColor = Vec3f(c.redF(), c.greenF(), c.blueF());
+		ep->setMarkerColor(vColor, true);
+		ui->habitableExoplanetMarkerColor->setStyleSheet("QToolButton { background-color:" + c.name() + "; }");
+	}
+}
+
+void ExoplanetsDialog::colorButton(QToolButton* toolButton, Vec3f vColor)
+{
+	QColor color(0,0,0);
+	color.setRgbF(vColor.v[0], vColor.v[1], vColor.v[2]);
+	// Use style sheet for create a nice buttons :)
+	toolButton->setStyleSheet("QToolButton { background-color:" + color.name() + "; }");
+	toolButton->setFixedSize(QSize(18, 18));
+}
+
+void ExoplanetsDialog::populateTemperatureScales()
+{
+	Q_ASSERT(ui->temperatureScaleComboBox);
+
+	QComboBox* tscale = ui->temperatureScaleComboBox;
+
+	//Save the current selection to be restored later
+	tscale->blockSignals(true);
+	int index = tscale->currentIndex();
+	QVariant selectedTScaleId = tscale->itemData(index);
+	tscale->clear();
+
+	// TRANSLATORS: Name of temperature scale
+	tscale->addItem(qc_("Kelvin", "temperature scale"), "Kelvin");
+	// TRANSLATORS: Name of temperature scale
+	tscale->addItem(qc_("Celsius", "temperature scale"), "Celsius");
+	// TRANSLATORS: Name of temperature scale
+	tscale->addItem(qc_("Fahrenheit", "temperature scale"), "Fahrenheit");
+
+	//Restore the selection
+	index = tscale->findData(selectedTScaleId, Qt::UserRole, Qt::MatchCaseSensitive);
+	tscale->setCurrentIndex(index);
+	tscale->blockSignals(false);
+}
+
+void ExoplanetsDialog::setTemperatureScale(int tScaleID)
+{
+	QString currentTScaleID = ui->temperatureScaleComboBox->itemData(tScaleID).toString();
+	ep->setCurrentTemperatureScaleKey(currentTScaleID);
 }

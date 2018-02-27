@@ -49,21 +49,14 @@
 
 \input{structure} % Insert the commands.tex file which contains the majority of the structure behind the template
 \input{version}
-%\usepackage{fancyvrb}
-\usepackage{marvosym}% For the Zodiac symbols, \Aries etc. 
-\usepackage{tocvsec2} % Allows fine-tuning TOC depth. (to suppress GPL sections in TOC but have them still numbered)
-%\newenvironment{commands}{\begin{wBox}\begin{Verbatim}}{\end{Verbatim}\end{wBox}}
-%\DefineVerbatimEnvironment{commands}{\begin{wBox}\begin{Verbatim}}{\end{Verbatim}\end{wBox}}
-%\lstnewenvironment{commands}{\begin{wBox}\lstset{basicstyle=\ttfamily}\begin{lstlisting}}{\end{lstlisting}\end{wBox}}
-
-%% This can be used to verify general page layout with the command \layout given later.
-%% \usepackage{layout}
 
 %% GZ Some commands which can be used later, like version number etc.
 
 \newcommand{\DocumentEdition}{1}
 
 \begin{document}
+\VerbatimFootnotes % Allow \verb|whatever| in footnotes 
+
 %----------------------------------------------------------------------------------------
 %	TITLE PAGE
 %----------------------------------------------------------------------------------------
@@ -78,7 +71,7 @@
 \draw[anchor=north] (midpoint) node [fill=ocre!30!white,fill opacity=0.6,text opacity=1,inner sep=1cm]%
      {\Huge\centering\bfseries\sffamily\parbox[c][][t]{\paperwidth}%
                                               {\centering Stellarium \StelVersion\space User Guide\\[18pt] % Book title
-                                              {\Large Georg Zotti, Alexander Wolf, Matthew Gates, Barry Gerdes}\\[15pt]% Author names
+                                              {\Large Georg Zotti, Alexander Wolf (editors)}\\[15pt]% Author names
                                               {\Large 2017}% Year
                                              }}; % 
 \end{tikzpicture}};
@@ -96,7 +89,7 @@
 
 \noindent Copyright \copyright\ 2014-2017 Georg Zotti.\\ % Copyright notice
 \noindent Copyright \copyright\ 2011-2017 Alexander Wolf.\\ % Copyright notice
-\noindent Copyright \copyright\ 2006-2009 Matthew Gates.\\ % Copyright notice
+\noindent Copyright \copyright\ 2006-2013 Matthew Gates.\\ % Copyright notice
 \noindent Copyright \copyright\ 2013-2014 Barry Gerdes (\dag\,2014).\\ % Copyright notice
 \ifthenelse{\equal{\StelVersion}{0.15.0}}{%
 \noindent \fbox{
@@ -108,12 +101,12 @@
 
 \noindent \textsc{stellarium.org}\\ % URL
 
-\noindent Permission is granted to copy, distribute and/or modify this
-document under the terms of the GNU Free Documentation License,
-Version 1.2 or any later version published by the Free Software
-Foundation; with no Invariant Sections, no Front-Cover Texts, and no
-Back-Cover Texts. A copy of the license is included in
-appendix~\ref{ch:License} entitled ``GNU Free Documentation
+\noindent Permission is granted to copy, distribute and/or modify 
+this document under the terms of the GNU Free Documentation License, 
+Version 1.3 or any later version published by the Free Software 
+Foundation; with no Invariant Sections, no Front-Cover Texts, 
+and no Back-Cover Texts. A copy of the license is included in 
+the appendix~\ref{ch:License} entitled ``GNU Free Documentation
 License''.\\ % License information
 
 \small{\noindent \textit{All trademarks, third party brands, product names, trade names,
@@ -190,7 +183,7 @@ implying a violation of copyright law.}}\\
 \chapterimage{chapter-t3-bg} % Chapter heading image
 
 \include{ch_advanced_use}
-%% GZ I propose to  replace the old chapter with course notes I have developed in late 2015. To get the old version, activate next line instead.
+%% GZ: I replaced the old chapter with course notes I have developed in late 2015. To get the old version, activate next line instead.
 %\include{ch_landscapes}
 \include{ch_landscapes_gz}
 \include{ch_dso} %% Maybe DSO is more a reference chapter? --> Appendix in this case? Or split?
@@ -202,12 +195,15 @@ implying a violation of copyright law.}}\\
 \part{Extending Stellarium}
 \chapterimage{chapter-t3-bg} % Chapter heading image
 \include{ch_plugins}
-\include{plg_interfaces} % TUI, RemoteControl, (2017: D-BUS?)
+\include{plg_interfaces} % TUI, RemoteControl, RemoteSync, (2018: D-BUS?)
 \include{plg_catalogs}
 \include{plg_archaeolines}
 \include{plg_scenery3d} % move to historical.
-\include{plg_atTheTelescope} % TODO: TelescopeControl, Oculars, various hardware projects with Raspberry, Arduino, ...
+\include{plg_atTheTelescope} % TelescopeControl, Oculars, various hardware projects with Raspberry, Arduino, ...
 \include{ch_scripting}
+
+%% TODO: Optional: Maybe extract Chapter "Stellarium at the Telescope" plus more technical info into a proper Part. 
+%%       Also maybe create a Part "Historical and Cultural astronomy"?
 
 %----------------------------------------------------------------------------------------
 %	PART IV
@@ -216,30 +212,28 @@ implying a violation of copyright law.}}\\
 \part{Practical Astronomy}
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER X (Astronomical Concepts)
+%	CHAPTER 16 (Astronomical Concepts)
 %----------------------------------------------------------------------------------------
 \chapterimage{chapter-t4-bg} % Chapter heading image
 \include{ch_astronomical_concepts}
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER X (Astronomical Phenomena)
+%	CHAPTER 17 (Astronomical Phenomena)
 %----------------------------------------------------------------------------------------
 
 \include{ch_astronomical_phenomena}
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER X (A Short Sky Guide)
+%	CHAPTER 18 (A Short Sky Guide)
 %----------------------------------------------------------------------------------------
 
 \include{ch_sky_guide}
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER X (Exercises)
+%	CHAPTER 19 (Exercises)
 %----------------------------------------------------------------------------------------
 \chapterimage{chapter-t4-bg} % Chapter heading image
 \include{ch_exercises}
-
-%% TODO: Chapter "Stellarium at the Telescope"
 
 %----------------------------------------------------------------------------------------
 %	PART V
@@ -277,24 +271,31 @@ implying a violation of copyright law.}}\\
 
 \include{app_config_ini}
 \include{app_ssystem_ini}
+
 %----------------------------------------------------------------------------------------
-%	CHAPTER E (Accuracy, and some notes about used algorithms.)
+%	CHAPTER E (Planetary features and nomenclature.)
+%----------------------------------------------------------------------------------------
+
+\include{app_nomenclature}
+
+%----------------------------------------------------------------------------------------
+%	CHAPTER F (Accuracy, and some notes about used algorithms.)
 %----------------------------------------------------------------------------------------
 
 \include{app_accuracy}%% This could go to the front as section of a chapter "Scientific Use"
 
-%----------------------------------------------------------------------------------------
-%	CHAPTER F (Acknowledgements) 
-%----------------------------------------------------------------------------------------
-
-\include{app_acknowledgements}
 
 %----------------------------------------------------------------------------------------
-%	CHAPTER G (License) -- N.B. "G" for GNU sounds also good.
+%	CHAPTER G (License) -- N.B. "G" for GNU sounds also good. Try to keep this "G"!
 %----------------------------------------------------------------------------------------
 
 \include{app_license}
 
+%----------------------------------------------------------------------------------------
+%	CHAPTER H (Acknowledgements) 
+%----------------------------------------------------------------------------------------
+
+\include{app_acknowledgements}
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY

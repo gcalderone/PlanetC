@@ -179,7 +179,8 @@ void TelescopeDialog::createDialogContent()
 		QString rts2Url;
 		QString rts2Username;
 		QString rts2Password;
-		if(!telescopeManager->getTelescopeAtSlot(slotNumber, connectionType, name, equinox, host, portTCP, delay, connectAtStartup, circles, serverName, portSerial, rts2Url, rts2Username, rts2Password))
+		int rts2Refresh;
+		if(!telescopeManager->getTelescopeAtSlot(slotNumber, connectionType, name, equinox, host, portTCP, delay, connectAtStartup, circles, serverName, portSerial, rts2Url, rts2Username, rts2Password, rts2Refresh))
 			continue;
 		
 		//Determine the server type
@@ -252,11 +253,14 @@ void TelescopeDialog::setAboutText()
 	//TODO: Expand
 	QString aboutPage = "<html><head></head><body>";
 	aboutPage += "<h2>" + q_("Telescope Control plug-in") + "</h2><table width=\"90%\">";
-	aboutPage += "<tr width=\"30%\"><td><strong>" + q_("Version") + ":</strong></td><td>" + TELESCOPE_CONTROL_VERSION + "</td></tr>";
-	aboutPage += "<tr><td rowspan=4><strong>" + q_("Authors") + "</strong></td><td>Johannes Gajdosik</td></td>";
+	aboutPage += "<tr width=\"30%\"><td><strong>" + q_("Version") + ":</strong></td><td>" + TELESCOPE_CONTROL_PLUGIN_VERSION + "</td></tr>";
+	aboutPage += "<tr><td><strong>" + q_("License") + ":</strong></td><td>" + TELESCOPE_CONTROL_PLUGIN_LICENSE + "</td></tr>";
+	aboutPage += "<tr><td rowspan=3><strong>" + q_("Authors") + "</strong></td><td>Johannes Gajdosik</td></td>";
 	aboutPage += "<tr><td>Michael Heinz</td></tr>";
 	aboutPage += "<tr><td>Bogdan Marinov &lt;bogdan.marinov84@gmail.com&gt; (" + q_("Plug-in and GUI programming") + ")</td></tr>";
-	aboutPage += "<tr><td>Petr Kubánek (" + q_("RTS2 support") + ")</td></tr>";
+	aboutPage += "<tr><td rowspan=2><strong>" + q_("Contributors") + ":</strong></td><td>Petr Kubánek (" + q_("RTS2 support") + ")</td></tr>";
+    aboutPage += "<tr><td>Alexander Wolf &lt;alex.v.wolf@gmail.com&gt;</td></tr>";
+    aboutPage += "<tr><td></td><td>Alessandro Siniscalchi &lt;asiniscalchi@gmail.com&gt;</td></tr>";
 	aboutPage += "</table>";
 
 	aboutPage += "<p>" + q_("This plug-in is based on and reuses a lot of code under the GNU General Public License:") + "</p><ul>";
@@ -264,7 +268,8 @@ void TelescopeDialog::setAboutText()
 	aboutPage += "<li>" + q_("the telescope server core code (licensed under the LGPL)") + "</li>";
 	aboutPage += "<li>" + q_("the TelescopeServerLx200 telescope server core code (originally licensed under the LGPL)");
 	aboutPage += "<br/>" + q_("Author of all of the above - the client, the server core, and the LX200 server, along with the Stellarium telescope control network protocol (over TCP/IP), is <b>Johannes Gajdosik</b>.") + "</li>";
-	aboutPage += "<li>" + q_("the TelescopeServerNexStar telescope server core code (originally licensed under the LGPL, based on TelescopeServerLx200) by <b>Michael Heinz</b>.") + "</li></ul>";
+    aboutPage += "<li>" + q_("the TelescopeServerNexStar telescope server core code (originally licensed under the LGPL, based on TelescopeServerLx200) by <b>Michael Heinz</b>.") + "</li>";
+    aboutPage += "<li>" + q_("INDI by <b>Alessandro Siniscalchi</b>.") + "</li></ul>";
 
 	aboutPage += "<h3>" + q_("Links") + "</h3>";
 	aboutPage += "<p>" + QString(q_("Support is provided via the Launchpad website.  Be sure to put \"%1\" in the subject when posting.")).arg("Telescope Control plug-in") + "</p>";
@@ -508,7 +513,11 @@ QString TelescopeDialog::getTypeLabel(ConnectionType type)
 			break;
 		case ConnectionRTS2:
 			// TRANSLATORS: Telescope connection type
-			typeLabel = N_("RTS2");
+			typeLabel = N_("remote, RTS2");
+			break;
+		case ConnectionINDI:
+			// TRANSLATORS: Telescope connection type
+			typeLabel = N_("remote, INDI");
 			break;
 		default:
 			;

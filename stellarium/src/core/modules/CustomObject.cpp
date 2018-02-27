@@ -60,7 +60,10 @@ QString CustomObject::getNameI18n() const
 	if (isMarker)
 	{
 		QStringList cod = designation.split(" ");
-		r = QString("%1 %2").arg(q_(cod.at(0))).arg(cod.at(1));
+		if (cod.count()>1)
+			r = QString("%1 %2").arg(q_(cod.at(0))).arg(cod.at(1));
+		else
+			r = q_(r);
 	}
 	return r;
 }
@@ -75,14 +78,15 @@ QString CustomObject::getInfoString(const StelCore* core, const InfoStringGroup&
 
 	if (flags&ObjectType)
 	{
+		QString type = q_("custom object");
 		if (isMarker)
-			oss << q_("Type: <b>%1</b>").arg(q_("custom marker")) << "<br />";
-		else
-			oss << q_("Type: <b>%1</b>").arg(q_("custom object")) << "<br />";
+			type = q_("custom marker");
+
+		oss << QString("%1: <b>%2</b>").arg(q_("Type"), type) << "<br />";
 	}
 
 	// Ra/Dec etc.
-	oss << getPositionInfoString(core, flags);
+	oss << getCommonInfoString(core, flags);
 	postProcessInfoString(str, flags);
 	return str;
 }

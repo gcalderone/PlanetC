@@ -62,6 +62,14 @@ typedef struct
 	float separation;	//! Separation at date of last satisfactory observation, arcsec
 } wds;
 
+typedef struct
+{
+	unsigned int sao;
+	unsigned int hd;
+	unsigned int hr;
+
+} crossid;
+
 typedef QMap<StelObjectP, float> StelACStarData;
 
 //! @class StarMgr
@@ -102,6 +110,11 @@ class StarMgr : public StelObjectModule
 		   READ getLabelsAmount
 		   WRITE setLabelsAmount
 		   NOTIFY labelsAmountChanged)
+	Q_PROPERTY(bool flagAdditionalNamesDisplayed
+		   READ getFlagAdditionalNames
+		   WRITE setFlagAdditionalNames
+		   NOTIFY flagAdditionalNamesDisplayedChanged
+		   )
 
 public:
 	StarMgr(void);
@@ -194,6 +207,10 @@ public slots:
 	static void setFlagSciNames(bool f) {flagSciNames = f;}
 	static bool getFlagSciNames(void) {return flagSciNames;}
 
+	//! Show additional star names.
+	void setFlagAdditionalNames(bool flag) { if (flagAdditionalStarNames!=flag){ flagAdditionalStarNames=flag; emit flagAdditionalNamesDisplayedChanged(flag);}}
+	static bool getFlagAdditionalNames(void) { return flagAdditionalStarNames; }
+
 public:
 	///////////////////////////////////////////////////////////////////////////
 	// Other methods
@@ -255,7 +272,7 @@ public:
 	//! Hipparcos catalogue number.
 	//! @param hip The Hipparcos number of star
 	//! @return cross-identification data
-	static QString getCrossIdentificationDesignations(int hip);
+	static QString getCrossIdentificationDesignations(QString hip);
 
 	//! Get the type of variability for a variable star with a specified
 	//! Hipparcos catalogue number.
@@ -352,6 +369,7 @@ private slots:
 signals:
 	void starLabelsDisplayedChanged(const bool displayed);
 	void starsDisplayedChanged(const bool displayed);
+	void flagAdditionalNamesDisplayedChanged(const bool displayed);
 	void labelsAmountChanged(float a);
 
 private:
@@ -402,7 +420,7 @@ private:
 	LinearFader labelsFader;
 	LinearFader starsFader;
 
-	bool flagStarName;
+	bool flagStarName;	
 	double labelsAmount;
 	bool gravityLabel;
 
@@ -449,17 +467,16 @@ private:
 	static QHash<int, wds> wdsStarsMapI18n;
 	static QMap<QString, int> wdsStarsIndexI18n;
 
-	static QHash<int, int> saoStarsMap;
+	static QMap<QString, crossid> crossIdMap;
 	static QMap<int, int> saoStarsIndex;
-	static QHash<int, int> hdStarsMap;
 	static QMap<int, int> hdStarsIndex;
-	static QHash<int, int> hrStarsMap;
 	static QMap<int, int> hrStarsIndex;
 
 	static QHash<int, QString> referenceMap;
 
 	QFont starFont;
 	static bool flagSciNames;
+	static bool flagAdditionalStarNames;
 	Vec3f labelColor;
 
 	StelTextureSP texPointer;		// The selection pointer texture

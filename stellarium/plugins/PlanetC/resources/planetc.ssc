@@ -291,7 +291,7 @@ function planetc_initializeDomeMode(startDate) {
     //--------------------------------------------------------------------
     //SolarSystem.setFlagTrails(true);
     //SolarSystem.setFlagOrbits(true);
-    SolarSystem.setFlagMoonScale(false);
+    //SolarSystem.setFlagMoonScale(false);
 
 
     //StelMovementMgr.setEquatorialMount(false);

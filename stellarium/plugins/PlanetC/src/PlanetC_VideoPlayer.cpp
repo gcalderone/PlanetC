@@ -1,7 +1,7 @@
 /*
  * Planetarium Control (PlanetC) plug-in for Stellarium
  *
- * Copyright (C) 2016-2017 Giorgio Calderone
+ * Copyright (C) 2016-2018 Giorgio Calderone
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -141,7 +141,9 @@ void PlanetC_VideoPlayer::setVolume(float vol)
 
 void PlanetC_VideoPlayer::update(qint64 timepos)
 {
-	if (!flagUpdate) return;
+	if ((!flagUpdate) &&
+		(position() > 5000))
+		return;
 	flagUpdate = false;
 
 #ifdef ENABLE_QTAV
@@ -158,7 +160,7 @@ void PlanetC_VideoPlayer::update(qint64 timepos)
 
 	float scale2W = (scale * maxW) / videoSize.width();
 	float scale2H = (scale * maxH) / videoSize.height();
-	float scale2 = (scale2W < scale2H  ?  scale2W  :  scale2H);
+	float scale2 = (scale2W < scale2H  ?  scale2H  :  scale2W);
 #ifdef ENABLE_QTAV
 	videoItem1->resizeRenderer(videoSize.width() * scale2, videoSize.height() * scale2);
 	videoItem2->resizeRenderer(videoSize.width() * scale2, videoSize.height() * scale2);

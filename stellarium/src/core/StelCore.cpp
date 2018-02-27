@@ -41,6 +41,7 @@
 #include "StelFileMgr.hpp"
 #include "StelMainView.hpp"
 #include "EphemWrapper.hpp"
+#include "NomenclatureItem.hpp"
 #include "precession.h"
 
 #include <QSettings>
@@ -137,8 +138,8 @@ StelCore::StelCore()
 	double eps1875, chi1875, omega1875, psi1875;
 	double jdB1875 = StelUtils::getJDFromBesselianEpoch(1875.0);
 	getPrecessionAnglesVondrak(jdB1875, &eps1875, &chi1875, &omega1875, &psi1875);
-	matJ2000ToJ1875= Mat4d::xrotation(84381.406*1./3600.*M_PI/180.) * Mat4d::zrotation(-psi1875) * Mat4d::xrotation(-omega1875) * Mat4d::zrotation(chi1875);
-	matJ2000ToJ1875=matJ2000ToJ1875.transpose();
+	matJ2000ToJ1875 = Mat4d::xrotation(84381.406*1./3600.*M_PI/180.) * Mat4d::zrotation(-psi1875) * Mat4d::xrotation(-omega1875) * Mat4d::zrotation(chi1875);
+	matJ2000ToJ1875 = matJ2000ToJ1875.transpose();
 }
 
 
@@ -270,9 +271,11 @@ void StelCore::init()
 	actionsMgr->addAction("actionSubtract_Solar_Day", timeGroup, N_("Subtract 1 solar day"), this, "subtractDay()", "-");
 	actionsMgr->addAction("actionSubtract_Solar_Week", timeGroup, N_("Subtract 7 solar days"), this, "subtractWeek()", "[");
 	actionsMgr->addAction("actionAdd_Sidereal_Day", timeGroup, N_("Add 1 sidereal day"), this, "addSiderealDay()", "Alt+=");
+	actionsMgr->addAction("actionAdd_Sidereal_Week", timeGroup, N_("Add 7 sidereal days"), this, "addSiderealWeek()");
 	actionsMgr->addAction("actionAdd_Sidereal_Year", timeGroup, N_("Add 1 sidereal year"), this, "addSiderealYear()", "Ctrl+Alt+Shift+]");
 	actionsMgr->addAction("actionAdd_Sidereal_Century", timeGroup, N_("Add 100 sidereal years"), this, "addSiderealYears()");
 	actionsMgr->addAction("actionAdd_Synodic_Month", timeGroup, N_("Add 1 synodic month"), this, "addSynodicMonth()");
+	actionsMgr->addAction("actionAdd_Saros", timeGroup, N_("Add 1 saros"), this, "addSaros()");
 	actionsMgr->addAction("actionAdd_Draconic_Month", timeGroup, N_("Add 1 draconic month"), this, "addDraconicMonth()");
 	actionsMgr->addAction("actionAdd_Draconic_Year", timeGroup, N_("Add 1 draconic year"), this, "addDraconicYear()");
 	actionsMgr->addAction("actionAdd_Anomalistic_Month", timeGroup, N_("Add 1 anomalistic month"), this, "addAnomalisticMonth()");
@@ -286,9 +289,11 @@ void StelCore::init()
 	actionsMgr->addAction("actionAdd_Julian_Century", timeGroup, N_("Add 1 Julian century"), this, "addJulianYears()");
 	actionsMgr->addAction("actionAdd_Gaussian_Year", timeGroup, N_("Add 1 Gaussian year"), this, "addGaussianYear()");
 	actionsMgr->addAction("actionSubtract_Sidereal_Day", timeGroup, N_("Subtract 1 sidereal day"), this, "subtractSiderealDay()", "Alt+-");
+	actionsMgr->addAction("actionSubtract_Sidereal_Week", timeGroup, N_("Subtract 7 sidereal days"), this, "subtractSiderealWeek()");
 	actionsMgr->addAction("actionSubtract_Sidereal_Year", timeGroup, N_("Subtract 1 sidereal year"), this, "subtractSiderealYear()", "Ctrl+Alt+Shift+[");
 	actionsMgr->addAction("actionSubtract_Sidereal_Century", timeGroup, N_("Subtract 100 sidereal years"), this, "subtractSiderealYears()");
 	actionsMgr->addAction("actionSubtract_Synodic_Month", timeGroup, N_("Subtract 1 synodic month"), this, "subtractSynodicMonth()");
+	actionsMgr->addAction("actionSubtract_Saros", timeGroup, N_("Subtract 1 saros"), this, "subtractSaros()");
 	actionsMgr->addAction("actionSubtract_Draconic_Month", timeGroup, N_("Subtract 1 draconic month"), this, "subtractDraconicMonth()");
 	actionsMgr->addAction("actionSubtract_Draconic_Year", timeGroup, N_("Subtract 1 draconic year"), this, "subtractDraconicYear()");
 	actionsMgr->addAction("actionSubtract_Anomalistic_Month", timeGroup, N_("Subtract 1 anomalistic month"), this, "subtractAnomalisticMonth()");
@@ -1158,20 +1163,24 @@ void StelCore::moveObserverToSelected()
 					loc = results.value(results.firstKey()); // ...and use it!
 
 				moveObserverTo(loc);
+			}
+		}
+		else
+		{
+			NomenclatureItem* ni = dynamic_cast<NomenclatureItem*>(objmgr->getSelectedObject()[0].data());
+			if (ni)
+			{
+				// We need to move to the nomenclature item's host planet.
+				StelLocation loc; //  = getCurrentLocation();
+				loc.planetName = ni->getPlanet()->getEnglishName();
+				loc.name=ni->getEnglishName();
+				loc.state = "";
+				loc.longitude=ni->getLongitude();
+				loc.latitude=ni->getLatitude();
+				loc.bortleScaleIndex=1;
 
-				LandscapeMgr* landscapeMgr = GETSTELMODULE(LandscapeMgr);
-				if (pl->getEnglishName().contains("Observer", Qt::CaseInsensitive))
-				{
-					landscapeMgr->setFlagAtmosphere(false);
-					landscapeMgr->setFlagFog(false);
-					landscapeMgr->setFlagLandscape(false);
-				}
-				else
-				{
-					landscapeMgr->setFlagAtmosphere(pl->hasAtmosphere());
-					landscapeMgr->setFlagFog(pl->hasAtmosphere());
-					landscapeMgr->setFlagLandscape(true);
-				}
+				moveObserverTo(loc);
+				objmgr->unSelect(); // no use to keep it: Marker will flicker around the screen.
 			}
 		}
 	}
@@ -1429,6 +1438,11 @@ void StelCore::addSiderealDay()
 	addSiderealDays(1.0);
 }
 
+void StelCore::addSiderealWeek()
+{
+	addSiderealDays(7.0);
+}
+
 void StelCore::addSiderealYear()
 {
 	double days = 365.256363004;
@@ -1452,6 +1466,12 @@ void StelCore::addSiderealYears(float n)
 void StelCore::addSynodicMonth()
 {
 	addSolarDays(29.530588853);
+}
+
+void StelCore::addSaros()
+{
+	// 223 synodic months
+	addSolarDays(6585.321314219);
 }
 
 void StelCore::addDraconicMonth()
@@ -1541,6 +1561,11 @@ void StelCore::subtractSiderealDay()
 	addSiderealDays(-1.0);
 }
 
+void StelCore::subtractSiderealWeek()
+{
+	addSiderealDays(-7.0);
+}
+
 void StelCore::subtractSiderealYear()
 {
 	double days = 365.256363004;
@@ -1564,6 +1589,12 @@ void StelCore::subtractSiderealYears(float n)
 void StelCore::subtractSynodicMonth()
 {
 	addSolarDays(-29.530588853);
+}
+
+void StelCore::subtractSaros()
+{
+	// 223 synodic months
+	addSolarDays(-6585.321314219);
 }
 
 void StelCore::subtractDraconicMonth()
@@ -1773,7 +1804,7 @@ void StelCore::updateTime(double deltaTime)
 	// GZ maybe setting this static can speedup a bit?
 	static SolarSystem* solsystem = (SolarSystem*)StelApp::getInstance().getModuleMgr().getModule("SolarSystem");
 	// Likely the most important location where we need JDE:
-	solsystem->computePositions(getJDE(), position->getHomePlanet()->getHeliocentricEclipticPos());
+	solsystem->computePositions(getJDE(), position->getHomePlanet());
 }
 
 void StelCore::resetSync()

@@ -73,6 +73,16 @@ class NebulaMgr : public StelObjectModule
 		   WRITE setHintsProportional
 		   NOTIFY hintsProportionalChanged
 		   )
+	Q_PROPERTY(bool flagOutlinesDisplayed
+		   READ getFlagOutlines
+		   WRITE setFlagOutlines
+		   NOTIFY flagOutlinesDisplayedChanged
+		   )
+	Q_PROPERTY(bool flagAdditionalNamesDisplayed
+		   READ getFlagAdditionalNames
+		   WRITE setFlagAdditionalNames
+		   NOTIFY flagAdditionalNamesDisplayedChanged
+		   )
 	Q_PROPERTY(bool flagSurfaceBrightnessUsage
 		   READ getFlagSurfaceBrightnessUsage
 		   WRITE setFlagSurfaceBrightnessUsage
@@ -82,6 +92,11 @@ class NebulaMgr : public StelObjectModule
 		   READ getFlagSurfaceBrightnessArcsecUsage
 		   WRITE setFlagSurfaceBrightnessArcsecUsage
 		   NOTIFY flagSurfaceBrightnessArcsecUsageChanged
+		   )
+	Q_PROPERTY(bool flagSurfaceBrightnessShortNotationUsage
+		   READ getFlagSurfaceBrightnessShortNotationUsage
+		   WRITE setFlagSurfaceBrightnessShortNotationUsage
+		   NOTIFY flagSurfaceBrightnessShortNotationUsageChanged
 		   )
 	Q_PROPERTY(double labelsAmount
 		   READ getLabelsAmount
@@ -97,6 +112,21 @@ class NebulaMgr : public StelObjectModule
 		   READ getDesignationUsage
 		   WRITE setDesignationUsage
 		   NOTIFY designationUsageChanged
+		   )
+	Q_PROPERTY(bool flagUseSizeLimits
+		   READ getFlagSizeLimitsUsage
+		   WRITE setFlagSizeLimitsUsage
+		   NOTIFY flagSizeLimitsUsageChanged
+		   )
+	Q_PROPERTY(double minSizeLimit
+		   READ getMinSizeLimit
+		   WRITE setMinSizeLimit
+		   NOTIFY minSizeLimitChanged
+		   )
+	Q_PROPERTY(double maxSizeLimit
+		   READ getMaxSizeLimit
+		   WRITE setMaxSizeLimit
+		   NOTIFY maxSizeLimitChanged
 		   )
 	// Colors
 	Q_PROPERTY(Vec3f labelsColor
@@ -168,6 +198,16 @@ class NebulaMgr : public StelObjectModule
 		   READ getStarColor
 		   WRITE setStarColor
 		   NOTIFY starsColorChanged
+		   )
+	Q_PROPERTY(Vec3f symbioticStarsColor
+		   READ getSymbioticStarColor
+		   WRITE setSymbioticStarColor
+		   NOTIFY symbioticStarsColorChanged
+		   )
+	Q_PROPERTY(Vec3f emissionLineStarsColor
+		   READ getEmissionLineStarColor
+		   WRITE setEmissionLineStarColor
+		   NOTIFY emissionLineStarsColorChanged
 		   )
 	Q_PROPERTY(Vec3f nebulaeColor
 		   READ getNebulaColor
@@ -254,6 +294,21 @@ class NebulaMgr : public StelObjectModule
 		   WRITE setSupernovaRemnantColor
 		   NOTIFY supernovaRemnantsColorChanged
 		   )
+	Q_PROPERTY(Vec3f supernovaCandidatesColor
+		   READ getSupernovaCandidateColor
+		   WRITE setSupernovaCandidateColor
+		   NOTIFY supernovaCandidatesColorChanged
+		   )
+	Q_PROPERTY(Vec3f supernovaRemnantCandidatesColor
+		   READ getSupernovaRemnantCandidateColor
+		   WRITE setSupernovaRemnantCandidateColor
+		   NOTIFY supernovaRemnantCandidatesColorChanged
+		   )
+	Q_PROPERTY(Vec3f galaxyClustersColor
+		   READ getGalaxyClusterColor
+		   WRITE setGalaxyClusterColor
+		   NOTIFY galaxyClustersColorChanged
+		   )
 
 public:
 	NebulaMgr();
@@ -313,8 +368,6 @@ public:
 
 	//! Compute the maximum magntiude for which hints will be displayed.
 	float computeMaxMagHint(const class StelSkyDrawer* skyDrawer) const;
-
-	bool objectInDisplayedCatalog(NebulaP n);
 
 	//! Get designation for latest selected DSO with priority
 	//! @note using for bookmarks feature as example
@@ -477,6 +530,27 @@ public slots:
 	void setSupernovaRemnantColor(const Vec3f& c);
 	//! Get current value of the supernova remnant symbol color.
 	const Vec3f getSupernovaRemnantColor(void) const;
+
+	//! Set the color used to draw the supernova candidate symbols.
+	//! @param c The color of the supernova candidate symbols
+	//! @code
+	//! // example of usage in scripts
+	//! NebulaMgr.setSupernovaCandidateColor(Vec3f(0.0,1.0,0.0));
+	//! @endcode
+	void setSupernovaCandidateColor(const Vec3f& c);
+	//! Get current value of the supernova candidate symbol color.
+	const Vec3f getSupernovaCandidateColor(void) const;
+
+
+	//! Set the color used to draw the supernova remnant candidate symbols.
+	//! @param c The color of the supernova remnant candidate symbols
+	//! @code
+	//! // example of usage in scripts
+	//! NebulaMgr.setSupernovaRemnantCandidateColor(Vec3f(0.0,1.0,0.0));
+	//! @endcode
+	void setSupernovaRemnantCandidateColor(const Vec3f& c);
+	//! Get current value of the supernova remnant candidate symbol color.
+	const Vec3f getSupernovaRemnantCandidateColor(void) const;
 
 	//! Set the color used to draw the interstellar matter symbols.
 	//! @param c The color of the interstellar matter symbols
@@ -648,6 +722,36 @@ public slots:
 	//! Get current value of the star symbol color.
 	const Vec3f getStarColor(void) const;
 
+	//! Set the color used to draw the symbiotic stars symbols.
+	//! @param c The color of the symbiotic stars symbols
+	//! @code
+	//! // example of usage in scripts
+	//! NebulaMgr.setSymbioticStarColor(Vec3f(1.0,1.0,0.0));
+	//! @endcode
+	void setSymbioticStarColor(const Vec3f& c);
+	//! Get current value of the symbiotic star symbol color.
+	const Vec3f getSymbioticStarColor(void) const;
+
+	//! Set the color used to draw the emission-line stars symbols.
+	//! @param c The color of the emission-line stars symbols
+	//! @code
+	//! // example of usage in scripts
+	//! NebulaMgr.setEmissionLineStarColor(Vec3f(1.0,1.0,0.0));
+	//! @endcode
+	void setEmissionLineStarColor(const Vec3f& c);
+	//! Get current value of the emission-line star symbol color.
+	const Vec3f getEmissionLineStarColor(void) const;
+
+	//! Set the color used to draw the cluster of galaxies symbols.
+	//! @param c The color of the cluster of galaxies symbols
+	//! @code
+	//! // example of usage in scripts
+	//! NebulaMgr.setGalaxyClusterColor(Vec3f(1.0,1.0,0.0));
+	//! @endcode
+	void setGalaxyClusterColor(const Vec3f& c);
+	//! Get current value of the cluster of galaxies symbol color.
+	const Vec3f getGalaxyClusterColor(void) const;
+
 	//! Set how long it takes for nebula hints to fade in and out when turned on and off.
 	//! @param duration given in seconds
 	void setHintsFadeDuration(float duration) {hintsFader.setDuration((int) (duration * 1000.f));}
@@ -662,20 +766,40 @@ public slots:
 	//! Get whether hints (symbols) are scaled according to nebula size.
 	bool getHintsProportional(void) const;
 
+	//! Set flag for usage outlines for big DSO instead their hints.
+	void setFlagOutlines(const bool flag);
+	//! Get flag for usage outlines for big DSO instead their hints.
+	bool getFlagOutlines(void) const;
+
+	//! Set flag for show an additional names for DSO
+	void setFlagAdditionalNames(const bool flag);
+	//! Get flag for show an additional names for DSO
+	bool getFlagAdditionalNames(void) const;
+
 	//! Set flag for usage designations of DSO for their labels instead common names.
 	void setDesignationUsage(const bool flag);
 	//! Get flag for usage designations of DSO for their labels instead common names.
 	bool getDesignationUsage(void) const;
 
 	//! Set whether hints (symbols) should be visible according to surface brightness value.
-	void setFlagSurfaceBrightnessUsage(const bool usage) {if(usage!=Nebula::surfaceBrightnessUsage){ Nebula::surfaceBrightnessUsage=usage; emit flagSurfaceBrightnessUsageChanged(usage);}}
+	void setFlagSurfaceBrightnessUsage(const bool usage);
 	//! Get whether hints (symbols) are visible according to surface brightness value.
-	bool getFlagSurfaceBrightnessUsage(void) const { return Nebula::surfaceBrightnessUsage; }
+	bool getFlagSurfaceBrightnessUsage(void) const;
 
 	//! Set flag for usage of measure unit mag/arcsec^2 to surface brightness value.
-	void setFlagSurfaceBrightnessArcsecUsage(const bool usage) { Nebula::flagUseArcsecSurfaceBrightness=usage; }
+	void setFlagSurfaceBrightnessArcsecUsage(const bool usage);
 	//! Get flag for usage of measure unit mag/arcsec^2 to surface brightness value.
-	bool getFlagSurfaceBrightnessArcsecUsage(void) const { return Nebula::flagUseArcsecSurfaceBrightness; }
+	bool getFlagSurfaceBrightnessArcsecUsage(void) const;
+
+	//! Set flag for usage of short notation for measure unit to surface brightness value.
+	void setFlagSurfaceBrightnessShortNotationUsage(const bool usage);
+	//! Get flag for usage of short notation for measure unit to surface brightness value.
+	bool getFlagSurfaceBrightnessShortNotationUsage(void) const;
+
+	//! Set flag for usage of size limits.
+	void setFlagSizeLimitsUsage(const bool usage);
+	//! Get flag for usage of size limits.
+	bool getFlagSizeLimitsUsage(void) const;
 
 	//! Set flag used to turn on and off Nebula rendering.
 	void setFlagShow(bool b) { flagShow = b; }
@@ -683,9 +807,23 @@ public slots:
 	bool getFlagShow(void) const { return flagShow; }
 
 	//! Set flag used to turn on and off DSO type filtering.
-	void setFlagUseTypeFilters(bool b) { if (Nebula::flagUseTypeFilters!=b) { Nebula::flagUseTypeFilters=b; emit flagUseTypeFiltersChanged(b);}}
+	void setFlagUseTypeFilters(const bool b);
 	//! Get value of flag used to turn on and off DSO type filtering.
-	bool getFlagUseTypeFilters(void) const { return Nebula::flagUseTypeFilters; }
+	bool getFlagUseTypeFilters(void) const;
+
+	//! Set the limit for min. angular size of displayed DSO.
+	//! @param s the angular size between 1 and 600 arcminutes
+	void setMinSizeLimit(double s);
+	//! Get the limit for min. angular size of displayed DSO.
+	//! @return the angular size between 1 and 600 arcminutes
+	double getMinSizeLimit(void) const;
+
+	//! Set the limit for max. angular size of displayed DSO.
+	//! @param s the angular size between 1 and 600 arcminutes
+	void setMaxSizeLimit(double s);
+	//! Get the limit for max. angular size of displayed DSO.
+	//! @return the angular size between 1 and 600 arcminutes
+	double getMaxSizeLimit(void) const;
 
 	//! Set the color used to draw nebula labels.
 	//! @param c The color of the nebula labels
@@ -700,18 +838,18 @@ public slots:
 	//! Set the amount of nebulae labels. The real amount is also proportional with FOV.
 	//! The limit is set in function of the nebulae magnitude
 	//! @param a the amount between 0 and 10. 0 is no labels, 10 is maximum of labels
-	void setLabelsAmount(double a) {if(a!=labelsAmount){labelsAmount=a; emit labelsAmountChanged(a);}}
+	void setLabelsAmount(double a);
 	//! Get the amount of nebulae labels. The real amount is also proportional with FOV.
 	//! @return the amount between 0 and 10. 0 is no labels, 10 is maximum of labels
-	double getLabelsAmount(void) const {return labelsAmount;}
+	double getLabelsAmount(void) const;
 
 	//! Set the amount of nebulae hints. The real amount is also proportional with FOV.
 	//! The limit is set in function of the nebulae magnitude
 	//! @param f the amount between 0 and 10. 0 is no hints, 10 is maximum of hints
-	void setHintsAmount(double f) {if(hintsAmount!=f){hintsAmount = f; emit hintsAmountChanged(f);}}
+	void setHintsAmount(double f);
 	//! Get the amount of nebulae labels. The real amount is also proportional with FOV.
 	//! @return the amount between 0 and 10. 0 is no hints, 10 is maximum of hints
-	double getHintsAmount(void) const {return hintsAmount;}
+	double getHintsAmount(void) const;
 
 signals:
 	//! Emitted when hints are toggled.
@@ -723,9 +861,15 @@ signals:
 	//! Emitted when the type filter is changed
 	void typeFiltersChanged(Nebula::TypeGroup flags);
 	void hintsProportionalChanged(bool b);
+	void flagOutlinesDisplayedChanged(bool b);
+	void flagAdditionalNamesDisplayedChanged(bool b);
 	void designationUsageChanged(bool b);
 	void flagSurfaceBrightnessUsageChanged(bool b);
 	void flagSurfaceBrightnessArcsecUsageChanged(bool b);
+	void flagSurfaceBrightnessShortNotationUsageChanged(bool b);
+	void flagSizeLimitsUsageChanged(bool b);
+	void minSizeLimitChanged(double s);
+	void maxSizeLimitChanged(double s);
 	void labelsAmountChanged(double a);
 	void hintsAmountChanged(double f);
 
@@ -743,6 +887,8 @@ signals:
 	void stellarAssociationsColorChanged(const Vec3f & color) const;
 	void starCloudsColorChanged(const Vec3f & color) const;
 	void starsColorChanged(const Vec3f & color) const;
+	void symbioticStarsColorChanged(const Vec3f & color) const;
+	void emissionLineStarsColorChanged(const Vec3f & color) const;
 	void nebulaeColorChanged(const Vec3f & color) const;
 	void planetaryNebulaeColorChanged(const Vec3f & color) const;
 	void darkNebulaeColorChanged(const Vec3f & color) const;
@@ -760,6 +906,9 @@ signals:
 	void blazarsColorChanged(const Vec3f & color) const;
 	void youngStellarObjectsColorChanged(const Vec3f & color) const;
 	void supernovaRemnantsColorChanged(const Vec3f & color) const;
+	void supernovaCandidatesColorChanged(const Vec3f & color) const;
+	void supernovaRemnantCandidatesColorChanged(const Vec3f & color) const;
+	void galaxyClustersColorChanged(const Vec3f & color) const;
 
 private slots:
 	//! Update i18 names from English names according to passed translator.
@@ -771,10 +920,6 @@ private slots:
 	//! Loads native names of deep-sky objects for a given sky culture.
 	//! @param skyCultureDir the name of the directory containing the sky culture to use.
 	void updateSkyCulture(const QString& skyCultureDir);
-
-	//! Called when the filter of DSO is updated.
-	//! Loads native names of deep-sky objects for a current sky culture.
-	void updateDSONames();
 
 private:
 
@@ -814,12 +959,17 @@ private:
 	NebulaP searchArp(unsigned int Arp);
 	NebulaP searchVV(unsigned int VV);
 	NebulaP searchPK(QString PK);
+	NebulaP searchPNG(QString PNG);
+	NebulaP searchSNRG(QString SNRG);
+	NebulaP searchACO(QString ACO);
 
 	// Load catalog of DSO
 	bool loadDSOCatalog(const QString& filename);
 	void convertDSOCatalog(const QString& in, const QString& out, bool decimal);
 	// Load proper names for DSO
 	bool loadDSONames(const QString& filename);
+	// Load outlines for DSO
+	bool loadDSOOutlines(const QString& filename);
 
 	QVector<NebulaP> dsoArray;		// The DSO list
 	QHash<unsigned int, NebulaP> dsoIndex;
@@ -843,8 +993,6 @@ private:
 	// For DSO convertor
 	bool flagConverter;
 	bool flagDecimalCoordinates;
-
-	bool flagReloading;
 };
 
 #endif // _NEBULAMGR_HPP_

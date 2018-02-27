@@ -90,11 +90,6 @@ private slots:
 	void showShortcutsWindow();
 	void setDiskViewport(bool);
 	void setSphericMirror(bool);
-	void cursorTimeOutChanged();
-	void cursorTimeOutChanged(double) {cursorTimeOutChanged();}
-	void usageButtonsBackgroundChanged(bool b);
-
-	void updateStartPointForAzimuth(bool b);
 
 	void newStarCatalogData();
 	void downloadStars();

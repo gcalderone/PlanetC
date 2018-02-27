@@ -59,7 +59,8 @@ StelTexture::~StelTexture()
 			glSize = 0;
 		}
 #ifndef NDEBUG
-		qDebug()<<"Deleted StelTexture"<<id<<", total memory usage "<<textureMgr->glMemoryUsage / (1024.0 * 1024.0)<<"MB";
+		if (qApp->property("verbose") == true)
+			qDebug()<<"Deleted StelTexture"<<id<<", total memory usage "<<textureMgr->glMemoryUsage / (1024.0 * 1024.0)<<"MB";
 #endif
 		id = 0;
 	}
@@ -203,14 +204,8 @@ template <typename T, typename Param, typename Arg>
 void StelTexture::startAsyncLoader(T (*functionPointer)(Param), const Arg &arg)
 {
 	Q_ASSERT(loader==Q_NULLPTR);
-#if (QT_VERSION >= QT_VERSION_CHECK(5,4,0))
 	//own thread pool only supported with Qt 5.4+
 	loader = new QFuture<GLData>(QtConcurrent::run(textureMgr->loaderThreadPool, functionPointer, arg));
-#else
-	//this restores compatibility with Qt 5.3, with the drawback of potentially using
-	//more memory while loading textures (because more than one can be loaded at a time)
-	loader = new QFuture<GLData>(QtConcurrent::run(functionPointer, arg));
-#endif
 }
 
 bool StelTexture::load()
@@ -241,11 +236,7 @@ bool StelTexture::load()
 void StelTexture::onNetworkReply()
 {
 	Q_ASSERT(loader == Q_NULLPTR);
-	if (networkReply->error() != QNetworkReply::NoError)
-	{
-		reportError(networkReply->errorString());
-	}
-	else
+	if (networkReply->error() == QNetworkReply::NoError && networkReply->bytesAvailable()>0)
 	{
 		QByteArray data = networkReply->readAll();
 		if(data.isEmpty()) //prevent starting the loader when there is nothing to load
@@ -253,6 +244,9 @@ void StelTexture::onNetworkReply()
 		else
 			startAsyncLoader(loadFromData, data);
 	}
+	else
+		reportError(networkReply->errorString());
+
 	networkReply->deleteLater();
 	networkReply = Q_NULLPTR;
 }
@@ -409,7 +403,8 @@ bool StelTexture::glLoad(const GLData& data)
 	glSize = data.data.size();
 
 #ifndef NDEBUG
-	qDebug()<<"StelTexture"<<id<<"uploaded, total memory usage "<<textureMgr->glMemoryUsage / (1024.0 * 1024.0)<<"MB";
+	if (qApp->property("verbose") == true)
+		qDebug()<<"StelTexture"<<id<<"uploaded, total memory usage "<<textureMgr->glMemoryUsage / (1024.0 * 1024.0)<<"MB";
 #endif
 
 	//restore old value

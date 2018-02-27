@@ -124,7 +124,6 @@ StelScriptMgr::StelScriptMgr(QObject *parent): QObject(parent)
 	
 	engine->setProcessEventsInterval(1); //PLANETC_GC: was 10, allow a smoother script execution
 
-
 	agent = new StelScriptEngineAgent(engine);
 	engine->setAgent(agent);
 

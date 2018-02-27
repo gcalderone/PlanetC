@@ -52,6 +52,7 @@ Constellation::Constellation()
 	, beginSeason(0)
 	, endSeason(0)
 	, constellation(Q_NULLPTR)
+	, artOpacity(1.f)
 {
 }
 
@@ -182,10 +183,10 @@ void Constellation::drawArtOptim(StelPainter& sPainter, const SphericalRegion& r
 {
 	if (checkVisibility())
 	{
-		const float intensity = artFader.getInterstate() * artIntensityFovScale;
+		const float intensity = artFader.getInterstate() * artOpacity * artIntensityFovScale;
 		if (artTexture && intensity > 0.0f && region.intersects(boundingCap))
 		{
-			sPainter.setColor(intensity,intensity,intensity);
+			//PLANETC_GC sPainter.setColor(intensity,intensity,intensity);
 			sPainter.setColor(artColor[0]*intensity,artColor[1]*intensity,artColor[2]*intensity); //PLANETC_GC
 
 			// The texture is not fully loaded
@@ -308,7 +309,7 @@ QString Constellation::getInfoString(const StelCore *core, const InfoStringGroup
 	}
 
 	if (flags&ObjectType)
-		oss << q_("Type: <b>%1</b>").arg(q_("constellation")) << "<br />";
+		oss << QString("%1: <b>%2</b>").arg(q_("Type"), q_("constellation")) << "<br />";
 
 	postProcessInfoString(str, flags);
 

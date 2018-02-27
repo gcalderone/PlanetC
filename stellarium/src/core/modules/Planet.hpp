@@ -31,10 +31,11 @@
 #include <QString>
 
 // The callback type for the external position computation function
+// arguments are JDE, position[3], velocity[3].
 // The last variable is the userData pointer.
-typedef void (*posFuncType)(double, double*, void*);
+typedef void (*posFuncType)(double, double*, double*, void*);
 
-typedef void (OsculatingFunctType)(double jde0,double jde,double xyz[3]);
+typedef void (OsculatingFunctType)(double jde0,double jde,double xyz[3], double xyzdot[3]);
 
 // epoch J2000: 12 UT on 1 Jan 2000
 #define J2000 2451545.0
@@ -65,7 +66,7 @@ public:
 	float obliquity;       // tilt of rotation axis w.r.t. ecliptic [radians]
 	float ascendingNode;   // long. of ascending node of equator on the ecliptic [radians]
 	float precessionRate;  // rate of precession of rotation axis in [rads/JulianCentury(36525d)]
-	double siderealPeriod; // sidereal period (Planet year in earth days) [earth days]
+	double siderealPeriod; // sidereal period (Planet year or a moon's sidereal month) [earth days]
 };
 
 // Class to manage rings for planets like saturn
@@ -196,10 +197,13 @@ public:
 	virtual Vec3d getJ2000EquatorialPos(const StelCore *core) const;
 	virtual QString getEnglishName(void) const;
 	virtual QString getNameI18n(void) const;
+	QString getCommonEnglishName(void) const {return englishName;}
+	QString getCommonNameI18n(void) const {return nameI18;}
 	//! Get angular semidiameter, degrees. If planet display is artificially enlarged (e.g. Moon upscale), value will also be increased.
 	virtual double getAngularSize(const StelCore* core) const;
 	virtual bool hasAtmosphere(void) {return atmosphere;}
 	virtual bool hasHalo(void) {return halo;}
+	float getAxisRotation(void) { return axisRotation;} //! return axisRotation last computed in computeTransMatrix().
 
 	///////////////////////////////////////////////////////////////////////////
 	// Methods of SolarSystem object
@@ -233,6 +237,9 @@ public:
 
 	void setNativeName(QString planet) { nativeName = planet; }
 
+	//! set the IAU moon number (designation of the moon), if any.
+	void setIAUMoonNumber(QString designation);
+
 	//! Return the absolute magnitude (read from file ssystem.ini)
 	float getAbsoluteMagnitude() const {return absoluteMagnitude;}
 	//! Return the mean opposition magnitude, defined as V(1,0)+5log10(a(a-1))
@@ -265,7 +272,7 @@ public:
 
 	//! Compute the position in the parent Planet coordinate system
 	void computePositionWithoutOrbits(const double dateJDE);
-	void computePosition(const double dateJDE);
+	virtual void computePosition(const double dateJDE);
 
 	//! Compute the transformation matrix from the local Planet coordinate to the parent Planet coordinate.
 	//! This requires both flavours of JD in cases involving Earth.
@@ -283,20 +290,27 @@ public:
 	//! Get the Planet position in the parent Planet ecliptic coordinate in AU
 	Vec3d getEclipticPos() const;
 
-	// Return the heliocentric ecliptical position
+	//! Return the heliocentric ecliptical position
 	Vec3d getHeliocentricEclipticPos() const {return getHeliocentricPos(eclipticPos);}
 
-	// Return the heliocentric transformation for local coordinate
+	//! Return the heliocentric transformation for local coordinate
 	Vec3d getHeliocentricPos(Vec3d) const;
 	void setHeliocentricEclipticPos(const Vec3d &pos);
 
-	// Compute the distance to the given position in heliocentric coordinate (in AU)
+	//! Get the planet velocity around the parent planet in ecliptical coordinates in AU/d
+	Vec3d getEclipticVelocity() const {return eclipticVelocity;}
+
+	//! Get the planet's heliocentric velocity in the solar system in ecliptical coordinates in AU/d. Required for aberration!
+	Vec3d getHeliocentricEclipticVelocity() const;
+
+	//! Compute the distance to the given position in heliocentric coordinates (in AU)
 	double computeDistance(const Vec3d& obsHelioPos);
 	double getDistance(void) const {return distance;}
 
 	void setRings(Ring* r) {rings = r;}
 
 	void setSphereScale(float s) { if(s!=sphereScale) { sphereScale = s; if(objModel) objModel->needsRescale=true; } }
+	float getSphereScale() const { return sphereScale; }
 
 	const QSharedPointer<Planet> getParent(void) const {return parent;}
 
@@ -314,11 +328,11 @@ public:
 
 	bool flagNativeName;
 	void setFlagNativeName(bool b) { flagNativeName = b; }
-	bool getFlagNativeName(void) { return flagNativeName; }
+	bool getFlagNativeName(void) const { return flagNativeName; }
 
 	bool flagTranslatedName;
 	void setFlagTranslatedName(bool b) { flagTranslatedName = b; }
-	bool getFlagTranslatedName(void) { return flagTranslatedName; }
+	bool getFlagTranslatedName(void) const { return flagTranslatedName; }
 
 	///////////////////////////////////////////////////////////////////////////
 	// DEPRECATED
@@ -450,7 +464,6 @@ protected:
 		StelOBJ* obj;
 		//! The opengl array, created by loadObjModel() but filled later in main thread
 		StelOpenGLArray* arr;
-
 	};
 
 	static StelTextureSP texEarthShadow;     // for lunar eclipses
@@ -480,22 +493,25 @@ protected:
 
 	// Draw the circle and name of the Planet
 	void drawHints(const StelCore* core, const QFont& planetNameFont);
-
+    
 	PlanetOBJModel* loadObjModel() const;
 
 	QString englishName;             // english planet name
 	QString nameI18;                 // International translated name
 	QString nativeName;              // Can be used in a skyculture
 	QString texMapName;              // Texture file path
-	QString normalMapName;              // Texture file path
-	//int flagLighting;                // Set whether light computation has to be proceed. NO LONGER USED (always on!)
+	QString normalMapName;           // Texture file path
+	//int flagLighting;              // Set whether light computation has to be proceed. NO LONGER USED (always on!)
 	RotationElements re;             // Rotation param
 	double radius;                   // Planet radius in AU
 	double oneMinusOblateness;       // (polar radius)/(equatorial radius)
-	Vec3d eclipticPos;               // Position in AU in the rectangular ecliptic coordinate system around the parent body. To get heliocentric coordinates, use getHeliocentricEclipticPos()
-	// centered on the parent Planet
+	Vec3d eclipticPos;               // Position in AU in the rectangular ecliptic coordinate system (J2000) around the parent body.
+					 // To get heliocentric coordinates, use getHeliocentricEclipticPos()
+	Vec3d eclipticVelocity;          // Speed in AU/d in the rectangular ecliptic coordinate system (J2000) around the parent body.
+					 // NEW FEATURE in late 2017. For now, this may be 0/0/0 when we are not yet able to compute it.
+					 // to get velocity, preferrably read getEclipticVelocity() and getHeliocentricEclipticVelocity()
+					 // The "State Vector" [Heafner 1999] can be formed from (JDE, eclipticPos, eclipticVelocity)
 	Vec3d screenPos;                 // Used to store temporarily the 2D position on screen
-//	Vec3d previousScreenPos;         // The position of this planet in the previous frame. 0.16pre: DEAD CODE!
 	Vec3f haloColor;                 // used for drawing the planet halo. Also, when non-spherical (OBJ) model without texture is used, its color is derived from haloColour*albedo.
 
 	float absoluteMagnitude;         // since 2017 this moved to the Planet class: V(1,0) from Explanatory Supplement or WGCCRE2009 paper for the planets, H in the H,G magnitude system for Minor planets, H10 for comets.
@@ -555,6 +571,10 @@ protected:
 	static double customGrsDrift;		// Annual drift of Great Red Spot position (degrees)
 
 private:
+	QString iauMoonNumber;
+
+	const QString getContextString() const;
+
 	// Shader-related variables
 	struct PlanetShaderVars {
 		// Vertex attributes
@@ -642,7 +662,12 @@ private:
 	static bool initFBO();
 	static void deinitFBO();
 
-	static QOpenGLShaderProgram* createShader(const QString& name, PlanetShaderVars& vars, const QByteArray& vSrc, const QByteArray& fSrc, const QByteArray& prefix=QByteArray(), const QMap<QByteArray,int>& fixedAttributeLocations=QMap<QByteArray,int>());
+	static QOpenGLShaderProgram* createShader(const QString& name,
+						  PlanetShaderVars& vars,
+						  const QByteArray& vSrc,
+						  const QByteArray& fSrc,
+						  const QByteArray& prefix=QByteArray(),
+						  const QMap<QByteArray,int>& fixedAttributeLocations=QMap<QByteArray,int>());
 };
 
 #endif // _PLANET_HPP_

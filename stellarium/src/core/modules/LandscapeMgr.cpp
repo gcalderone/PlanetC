@@ -412,10 +412,12 @@ void LandscapeMgr::init()
 	setColorCardinalPoints(StelUtils::strToVec3f(conf->value("color/cardinal_color", defaultColor).toString()));
 
 	StelApp *app = &StelApp::getInstance();
+	currentPlanetName = app->getCore()->getCurrentLocation().planetName;
 	//Bortle scale is managed by SkyDrawer
 	StelSkyDrawer* drawer = app->getCore()->getSkyDrawer();
 	setAtmosphereBortleLightPollution(drawer->getBortleScaleIndex());
-	connect(app->getCore(), SIGNAL(locationChanged(StelLocation)), this, SLOT(updateLocationBasedPollution(StelLocation)));
+	connect(app->getCore(), SIGNAL(locationChanged(StelLocation)), this, SLOT(onLocationChanged(StelLocation)));
+	connect(app->getCore(), SIGNAL(targetLocationChanged(StelLocation)), this, SLOT(onTargetLocationChanged(StelLocation)));
 	connect(drawer, SIGNAL(bortleScaleIndexChanged(int)), this, SLOT(setAtmosphereBortleLightPollution(int)));
 	connect(app, SIGNAL(languageChanged()), this, SLOT(updateI18n()));
 
@@ -660,14 +662,14 @@ void LandscapeMgr::setFlagUseLightPollutionFromDatabase(const bool usage)
 		if (usage)
 		{
 			StelLocation loc = core->getCurrentLocation();
-			updateLocationBasedPollution(loc);
+			onLocationChanged(loc);
 		}
 
 		emit flagUseLightPollutionFromDatabaseChanged(usage);
 	}
 }
 
-void LandscapeMgr::updateLocationBasedPollution(StelLocation loc)
+void LandscapeMgr::onLocationChanged(StelLocation loc)
 {
 	if(flagLightPollutionFromDatabase)
 	{
@@ -680,6 +682,44 @@ void LandscapeMgr::updateLocationBasedPollution(StelLocation loc)
 			bIdx = loc.DEFAULT_BORTLE_SCALE_INDEX;
 
 		core->getSkyDrawer()->setBortleScaleIndex(bIdx);
+	}
+}
+
+void LandscapeMgr::onTargetLocationChanged(StelLocation loc)
+{
+	if (loc.planetName != currentPlanetName)
+	{
+		currentPlanetName = loc.planetName;
+		if (flagLandscapeAutoSelection)
+		{
+			// If we have a landscape for selected planet then set it, otherwise use zero horizon landscape
+			bool landscapeSetsLocation = getFlagLandscapeSetsLocation();
+			setFlagLandscapeSetsLocation(false);
+			if (getAllLandscapeNames().indexOf(loc.planetName)>0)
+				setCurrentLandscapeName(loc.planetName);
+			else
+				setCurrentLandscapeID("zero");
+			setFlagLandscapeSetsLocation(landscapeSetsLocation);
+		}
+
+		if (loc.planetName.contains("Observer", Qt::CaseInsensitive))
+		{
+			setFlagAtmosphere(false);
+			setFlagFog(false);
+			setFlagLandscape(false);
+		}
+		else
+		{
+			SolarSystem* ssystem = (SolarSystem*)StelApp::getInstance().getModuleMgr().getModule("SolarSystem");
+			PlanetP pl = ssystem->searchByEnglishName(loc.planetName);
+			if (pl && flagAtmosphereAutoEnabling)
+			{
+				QSettings* conf = StelApp::getInstance().getSettings();
+				setFlagAtmosphere(pl->hasAtmosphere() & conf->value("landscape/flag_atmosphere", true).toBool());
+				setFlagFog(pl->hasAtmosphere() & conf->value("landscape/flag_fog", true).toBool());
+			}
+			setFlagLandscape(true);
+		}
 	}
 }
 
@@ -785,28 +825,61 @@ QString LandscapeMgr::getCurrentLandscapeName() const
 QString LandscapeMgr::getCurrentLandscapeHtmlDescription() const
 {
 	QString desc = getDescription();
-	desc+="<p>";
-	desc+="<b>"+q_("Author: ")+"</b>";
-	desc+=landscape->getAuthorName();
-	desc+="<br>";
+
+	QString author = landscape->getAuthorName();
+
+	desc += "<p>";
+	if (!author.isEmpty())
+		desc += QString("<b>%1</b>: %2<br />").arg(q_("Author"), author);
+
 	// This previously showed 0/0 for locationless landscapes!
 	if (landscape->hasLocation())
 	{
-		desc+="<b>"+q_("Location: ")+"</b>";
-		desc += StelUtils::radToDmsStrAdapt(landscape->getLocation().longitude * M_PI/180.);
-		desc += "/" + StelUtils::radToDmsStrAdapt(landscape->getLocation().latitude *M_PI/180.);
-		desc += QString(q_(", %1 m")).arg(landscape->getLocation().altitude);
+		//TRANSLATORS: Unit of measure for distance - meter
+		QString alt = qc_("m", "distance");
+
+		desc += QString("<b>%1</b>: %2, %3, %4 %5")
+				.arg(q_("Location"))
+				.arg(StelUtils::radToDmsStrAdapt(landscape->getLocation().latitude *M_PI/180.))
+				.arg(StelUtils::radToDmsStrAdapt(landscape->getLocation().longitude * M_PI/180.))
+				.arg(landscape->getLocation().altitude).arg(alt);
+
 		QString planetName = landscape->getLocation().planetName;
 		if (!planetName.isEmpty())
 		{
 			const StelTranslator& trans = StelApp::getInstance().getLocaleMgr().getSkyTranslator();
-			desc += "<br><b>"+q_("Celestial body:")+"</b> "+ trans.qtranslate(planetName);
+			desc += QString(", %1").arg(trans.qtranslate(planetName));
 		}
-		desc += "<br><br>";
-	}
-	// TBD: Activate this or delete?
-	//else
-	//	desc+="<b>"+q_("Location: ")+"</b>" + q_("not specified (just decoration)") + "<br><br>";
+		desc += "<br />";
+
+		QStringList atmosphere;
+		atmosphere.clear();
+
+		float pressure = landscape->getDefaultAtmosphericPressure();
+		if (pressure>-1.0)
+		{
+			// 1 mbar = 1 hPa
+			//TRANSLATORS: Unit of measure for pressure - hectopascals
+			QString hPa = qc_("hPa", "pressure");
+			atmosphere.append(QString("%1 %2").arg(QString::number(pressure, 'f', 1), hPa));
+		}
+
+		float temperature = landscape->getDefaultAtmosphericTemperature();
+		if (temperature>-1000.0)
+			atmosphere.append(QString("%1 %2C").arg(QString::number(temperature, 'f', 1)).arg(QChar(0x00B0)));
+
+		float extcoeff = landscape->getDefaultAtmosphericExtinction();
+		if (extcoeff>-1.0)
+			atmosphere.append(QString("%1: %2").arg(q_("extinction coefficient")).arg(QString::number(extcoeff, 'f', 2)));
+
+		if (atmosphere.size()>0)
+			desc += QString("<b>%1</b>: %2<br />").arg(q_("Atmospheric conditions"), atmosphere.join(", "));
+
+		int bortle = landscape->getDefaultBortleIndex();
+		if (bortle>-1)
+			desc += QString("<b>%1</b>: %2 (%3)").arg(q_("Light pollution")).arg(bortle).arg(q_("by Bortle scale"));
+
+	}	
 	return desc;
 }
 

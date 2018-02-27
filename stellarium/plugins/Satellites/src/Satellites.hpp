@@ -353,7 +353,7 @@ public:
 	//! QNetworkReply-s... --BM
 	static void parseTleFile(QFile& openFile,
 	                         TleDataHash& tleList,
-	                         bool addFlagValue = false);
+				 bool addFlagValue = false);
 
 	//! Reads qs.mag file and its parsing for getting id and standard magnitude
 	//! for satellites.
@@ -462,8 +462,6 @@ public slots:
 	//! Display a message on the screen for a few seconds.
 	//! This is used for plugin-specific warnings and such.
 	void displayMessage(const QString& message, const QString hexColor="#999999");
-	//! Hide all messages.
-	void hideMessages();
 
 	//! Save the current satellite catalog to disk.
 	void saveCatalog(QString path=QString());
@@ -598,7 +596,6 @@ private:
 	
 	//! @name Screen message infrastructure
 	//@{
-	QTimer* messageTimer;
 	QList<int> messageIDs;
 	//@}
 

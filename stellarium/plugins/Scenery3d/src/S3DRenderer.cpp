@@ -814,6 +814,7 @@ void S3DRenderer::calculateLighting()
 {
 	//calculate which light source we need + intensity
 	float ambientBrightness, directionalBrightness,emissiveFactor;
+	float eclipseFactor=GETSTELMODULE(SolarSystem)->getEclipseFactor(StelApp::getInstance().getCore());
 
 	Vec3d sunPosition = sun->getAltAzPosAuto(core);
 	sunPosition.normalize();
@@ -891,7 +892,7 @@ void S3DRenderer::calculateLighting()
 	// calculate ambient light
 	if(sinSunAngle > -0.3f) // sun above -18 deg?
 	{
-		lightInfo.sunAmbient = qMin(0.3f, sinSunAngle+0.3f);
+		lightInfo.sunAmbient = qMin(0.3f, sinSunAngle+0.3f)*eclipseFactor;
 		ambientBrightness += lightInfo.sunAmbient;
 	}
 	else
@@ -908,7 +909,7 @@ void S3DRenderer::calculateLighting()
 	// Now find shadow caster + directional light, if any:
 	if (sinSunAngle>-0.1f)
 	{
-		directionalBrightness=qMin(0.7f, std::sqrt(sinSunAngle+0.1f)); // limit to 0.7 in order to keep total below 1.
+		directionalBrightness=qMin(0.7f, std::sqrt(sinSunAngle+0.1f))*eclipseFactor; // limit to 0.7 in order to keep total below 1.
 		//redundant
 		//lightPosition = sunPosition;
 		if (shaderParameters.shadows) lightInfo.shadowCaster = LightParameters::SC_Sun;
@@ -1387,34 +1388,39 @@ void S3DRenderer::drawWithCubeMap()
 
 void S3DRenderer::drawCoordinatesText()
 {
-    StelPainter painter(altAzProjector);
-    painter.setFont(debugTextFont);
-    painter.setColor(1.0f,0.0f,1.0f);
-    float screen_x = altAzProjector->getViewportWidth()  - 240.0f;
-    float screen_y = altAzProjector->getViewportHeight() -  60.0f;
-    QString str;
+	StelPainter painter(altAzProjector);
+	painter.setFont(debugTextFont);
+	painter.setColor(1.0f,0.5f,1.0f);
 
-    Vec3d gridPos = currentScene->getGridPosition();
+	// Attempt at better font scaling for Macs and HiDPI.
+	int fontSize=debugTextFont.pixelSize();
 
-    const SceneInfo& info = currentScene->getSceneInfo();
+	float devicePixelscaling = altAzProjector->getDevicePixelsPerPixel()*StelApp::getInstance().getGlobalScalingRatio();
+	float screen_x = altAzProjector->getViewportWidth()  - 240.0f*devicePixelscaling;
+	float screen_y = altAzProjector->getViewportHeight() -  60.0f*devicePixelscaling;
+	QString str;
 
-    // problem: long grid names!
-    painter.drawText(altAzProjector->getViewportWidth()-10-qMax(240, painter.getFontMetrics().boundingRect(info.gridName).width()),
-		     screen_y, info.gridName);
-    screen_y -= 17.0f;
-    str = QString("East:   %1m").arg(gridPos[0], 10, 'f', 2);
-    painter.drawText(screen_x, screen_y, str);
-    screen_y -= 15.0f;
-    str = QString("North:  %1m").arg(gridPos[1], 10, 'f', 2);
-    painter.drawText(screen_x, screen_y, str);
-    screen_y -= 15.0f;
-    str = QString("Height: %1m").arg(gridPos[2], 10, 'f', 2);
-    painter.drawText(screen_x, screen_y, str);
-    screen_y -= 15.0f;
-    str = QString("Eye:    %1m").arg(currentScene->getEyeHeight(), 10, 'f', 2);
-    painter.drawText(screen_x, screen_y, str);
+	Vec3d gridPos = currentScene->getGridPosition();
 
-    /*// DEBUG AIDS:
+	const SceneInfo& info = currentScene->getSceneInfo();
+
+	// problem: long grid names!
+	painter.drawText(altAzProjector->getViewportWidth()-10.f-devicePixelscaling*qMax(240, painter.getFontMetrics().boundingRect(info.gridName).width()),
+			 screen_y, info.gridName);
+	screen_y -= (fontSize+1)*devicePixelscaling;
+	str = QString("East:   %1m").arg(gridPos[0], 10, 'f', 2);
+	painter.drawText(screen_x, screen_y, str);
+	screen_y -= (fontSize-1)*devicePixelscaling;
+	str = QString("North:  %1m").arg(gridPos[1], 10, 'f', 2);
+	painter.drawText(screen_x, screen_y, str);
+	screen_y -= (fontSize-1)*devicePixelscaling;
+	str = QString("Height: %1m").arg(gridPos[2], 10, 'f', 2);
+	painter.drawText(screen_x, screen_y, str);
+	screen_y -= (fontSize-1)*devicePixelscaling;
+	str = QString("Eye:    %1m").arg(currentScene->getEyeHeight(), 10, 'f', 2);
+	painter.drawText(screen_x, screen_y, str);
+
+	/*// DEBUG AIDS:
     screen_y -= 15.0f;
     str = QString("model_X:%1m").arg(model_pos[0], 10, 'f', 2);
     painter.drawText(screen_x, screen_y, str);screen_y -= 15.0f;
