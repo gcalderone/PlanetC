@@ -192,8 +192,10 @@ public slots:
 	//! Reset output file and cause the emission of an (empty) scriptOutput signal.
 	void resetOutput(void);
 
-	//! Save output file to new file (in same directory as output.txt).
+	//! Save output file to new file.
 	//! This is required to allow reading with other program on Windows while output.txt is still open.
+	//! @param filename new filename. If this is not an absolute path, it will be created in the same directory as output.txt
+	//! @note For storing to absolute path names, set [scripts]/flag_script_allow_write_absolute_path=true.
 	void saveOutputAs(const QString &filename);
 
 	//! Pause a running script.
@@ -212,10 +214,10 @@ signals:
 	void scriptRunning();
 	//! Notification when a script has stopped running 
 	void scriptStopped();
-
-	//! Notification when a script has been paused
+    
+        //! Notification when a script has been paused
 	void scriptPaused(); //PLANETC_GC
-
+    
 	//! Notification of a script event - warnings, current execution line etc.
 	void scriptDebug(const QString&) const;
 	//! Notification of a script event - output line.

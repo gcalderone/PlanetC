@@ -51,6 +51,7 @@
 #include <QTextStream>
 #include <QTranslator>
 #include <QNetworkDiskCache>
+#include <QThread>
 
 #include <clocale>
 
@@ -108,6 +109,28 @@ void clearCache()
 	cacheMgr->clear(); // Removes all items from the cache.
 }
 
+class SplashScreen : public QSplashScreen
+{
+    bool painted=false;
+    void paintEvent(QPaintEvent* e) override
+    {
+        QSplashScreen::paintEvent(e);
+        painted=true;
+    }
+public:
+    SplashScreen(QPixmap const& pixmap)
+        : QSplashScreen(pixmap)
+    {}
+    void ensureFirstPaint() const
+    {
+        while(!painted)
+        {
+            QThread::usleep(1000);
+            qApp->processEvents();
+        }
+    }
+};
+
 // Main stellarium procedure
 int main(int argc, char **argv)
 {
@@ -147,6 +170,7 @@ int main(int argc, char **argv)
 
 	QGuiApplication::setDesktopSettingsAware(false);
 	QGuiApplication::setAttribute(Qt::AA_ShareOpenGLContexts); //PLANETC_GC
+	
 
 #ifndef USE_QUICKVIEW
 	QApplication::setStyle(QStyleFactory::create("Fusion"));
@@ -169,10 +193,10 @@ int main(int argc, char **argv)
 	StelFileMgr::init();
 
 	QPixmap pixmap(StelFileMgr::findFile("data/splash.png"));
-	QSplashScreen splash(pixmap);
+	SplashScreen splash(pixmap);
 	splash.show();
 	splash.showMessage(StelUtils::getApplicationVersion() , Qt::AlignLeft, Qt::white);
-	app.processEvents();
+	splash.ensureFirstPaint();
 
 	// Log command line arguments.
 	QString argStr;
@@ -223,7 +247,7 @@ int main(int argc, char **argv)
 	qDebug() << "Writing log file to:" << QDir::toNativeSeparators(StelLogger::getLogFileName());
 	qDebug() << "File search paths:";
 	int n=0;
-	foreach (const QString& i, StelFileMgr::getSearchPaths())
+	for (const auto& i : StelFileMgr::getSearchPaths())
 	{
 		qDebug() << " " << n << ". " << QDir::toNativeSeparators(i);
 		++n;
@@ -350,7 +374,7 @@ int main(int argc, char **argv)
 	Q_ASSERT(confSettings);
 	qDebug() << "Config file is: " << QDir::toNativeSeparators(configFileFullPath);
 	*/
-
+	
 	#ifndef DISABLE_SCRIPTING
 	QString outputFile = StelFileMgr::getUserDir()+"/output.txt";
 	if (confSettings->value("main/use_separate_output_file", false).toBool())

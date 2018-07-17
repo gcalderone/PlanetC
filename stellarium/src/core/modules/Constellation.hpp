@@ -179,15 +179,15 @@ private:
 	LinearFader artFader, lineFader, nameFader, boundaryFader;
 	//! Constellation art opacity
 	float artOpacity;
-	std::vector<std::vector<Vec3f> *> isolatedBoundarySegments;
-	std::vector<std::vector<Vec3f> *> sharedBoundarySegments;
+	std::vector<std::vector<Vec3d> *> isolatedBoundarySegments;
+	std::vector<std::vector<Vec3d> *> sharedBoundarySegments;
 
 	//! Currently we only need one color for all constellations, this may change at some point
 	static Vec3f lineColor;
 	static Vec3f labelColor;
 	static Vec3f boundaryColor;
-	Vec3f artColor; //PLANETC_GC
-
+        Vec3f artColor; //PLANETC_GC
+    
 	static bool singleSelected;	
 	static bool seasonalRuleEnabled;
 	// set by ConstellationMgr to fade out art on small FOV values

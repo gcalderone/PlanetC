@@ -53,7 +53,7 @@ ScreenImage::ScreenImage(const QString& filename, float x, float y, bool show, f
 		rm.rotate(180);
 		pixmap = pixmap.transformed( rm );
 	}
-
+	
 	tex = StelMainView::getInstance().scene()->addPixmap(pixmap.scaled(pixmap.size()*scale));
 	tex->setTransformOriginPoint( tex->boundingRect().center() ); //PLANETC_GC
 	tex->setPos(x, y);
@@ -192,6 +192,7 @@ void ScreenImage::setOpacity(qreal alpha)
 	tex->setOpacity(alpha*maxAlpha);
 }
 
+
 //PLANETC_GC
 void ScreenImage::setScale(float scale)
 {
@@ -243,7 +244,7 @@ void ScreenImageMgr::init()
 
 void ScreenImageMgr::draw(StelCore* core)
 {
-	foreach(ScreenImage* m, allScreenImages)
+	for (auto* m : allScreenImages)
 		if (m!=Q_NULLPTR)
 			m->draw(core);
 }
@@ -286,7 +287,7 @@ void ScreenImageMgr::deleteImage(const QString& id)
 	
 void ScreenImageMgr::deleteAllImages()
 {
-	foreach(ScreenImage* m, allScreenImages)
+	for (auto* m : allScreenImages)
 	{
 		if (m!=Q_NULLPTR)
 		{
@@ -380,7 +381,7 @@ void ScreenImageMgr::setImageScale(const QString& id, float scaleX, float scaleY
 
 void ScreenImageMgr::update(double deltaTime)
 {
-	foreach(ScreenImage* m, allScreenImages)
+	for (auto* m : allScreenImages)
 		if (m!=Q_NULLPTR)
 			m->update(deltaTime);
 }

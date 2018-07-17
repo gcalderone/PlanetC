@@ -408,7 +408,7 @@ void SkyGrid::draw(const StelCore* core) const
 	sPainter.setBlending(true);
 	sPainter.setLineSmooth(true);
 	sPainter.setLineWidth(2.f); // PLANETC_GC
-
+	
 	// make text colors just a bit brighter. (But if >1, QColor::setRgb fails and makes text invisible.)
 	Vec4f textColor(qMin(1.0f, 1.25f*color[0]), qMin(1.0f, 1.25f*color[1]), qMin(1.0f, 1.25f*color[2]), fader.getInterstate());
 	sPainter.setColor(color[0],color[1],color[2], fader.getInterstate());
@@ -988,7 +988,7 @@ void SkyPoint::draw(StelCore *core) const
 
 	// Initialize a painter and set openGL state
 	StelPainter sPainter(prj);
-	sPainter.setColor(color[0], color[1], color[2], fader.getInterstate());	
+	sPainter.setColor(color[0], color[1], color[2], fader.getInterstate());
 	sPainter.setLineWidth(2.f); // PLANETC_GC
 	Vec4f textColor(color[0], color[1], color[2], 0);
 	textColor[3]=fader.getInterstate();

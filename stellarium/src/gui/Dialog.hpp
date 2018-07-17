@@ -44,23 +44,22 @@ class BarFrame : public QFrame
 Q_OBJECT
 public:
 	QPoint mousePos;
-  
-	//PLANETC_GC BarFrame(QWidget* parent) : QFrame(parent), moving(false) {}
-	BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) { //PLANETC_GC
-		if (p == NULL) { 
-			p = this;
-			while (p) {
-		        if (QString(p->metaObject()->className()) == "PlanetC_Dialog") {
-					setVisible(false);
-					break;
-		        }
-		        p = (QWidget*) p->parent();
-			}
-			if (p == NULL)
-		        p = (QWidget*) this->parent();
+    //PLANETC_GC BarFrame(QWidget* parent) : QFrame(parent), moving(false) {}
+    BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) { //PLANETC_GC
+	if (p == NULL) { 
+	    p = this;
+	    while (p) {
+		if (QString(p->metaObject()->className()) == "PlanetC_Dialog") {
+		    setVisible(false);
+		    break;
 		}
+		p = (QWidget*) p->parent();
+	    }
+	    if (p == NULL)
+		p = (QWidget*) this->parent();
 	}
-
+    }
+      
 	virtual void mousePressEvent(QMouseEvent *event);
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);
@@ -69,7 +68,7 @@ signals:
 	void movedTo(QPoint newPosition);
 protected:
 	bool moving;
-	QWidget* p; //PLANETC_GC
+        QWidget* p; //PLANETC_GC
 };
 
 class ResizeFrame : public QFrame
