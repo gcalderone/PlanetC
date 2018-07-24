@@ -438,7 +438,7 @@ IF(${Qt5Gui_OPENGL_IMPLEMENTATION} MATCHES "GLES")
 ENDIF()
 
 # Required by PlanetC
-SET(ENABLE_QTAV 1 CACHE BOOL "Define whether QtAV support should be activated.")
+SET(ENABLE_QTAV 0 CACHE BOOL "Define whether QtAV support should be activated.")
 IF(ENABLE_QTAV)
     ADD_DEFINITIONS(-DENABLE_QTAV)
     FIND_PACKAGE(QtAV REQUIRED)

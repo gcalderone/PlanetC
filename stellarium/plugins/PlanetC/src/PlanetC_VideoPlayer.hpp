@@ -35,58 +35,72 @@
 #endif
 
 
-
-#include <QWidget>
-
-
-
-
 class PlanetC_VideoPlayer 
 #ifdef ENABLE_QTAV
-	: public QtAV::AVPlayer
+    : public QtAV::AVPlayer
 #else
-	: public QMediaPlayer
+    : public QMediaPlayer
 #endif
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	PlanetC_VideoPlayer(QGraphicsView* p_view);
-	~PlanetC_VideoPlayer();
+    PlanetC_VideoPlayer(QGraphicsView* p_view);
+    ~PlanetC_VideoPlayer();
 
-	void openFile(const QString& filename, bool twin);
-	void stop();
-
-	void setScale(float scale);
-	void setVolume(float vol);
-	void setVisible(bool);
+    void openFile(const QString& filename, bool twin);
+    void close();
+    void setScale(float scale);
+    void setVisible(bool);
+    void forceUpdate() { flagUpdate = true; }
+    void setVolume(float vol);
+#ifdef ENABLE_QTAV
+    void play() {
+      if (isPaused())
+	pause(false);
+      else
+	QtAV::AVPlayer::play();
+    }
+#else
+  bool isPaused()  { qDebug() << "isPaused(): "  << (state() == QMediaPlayer::PausedState) ; return (state() == QMediaPlayer::PausedState); }
+  bool isPlaying() { qDebug() << "isPlaying(): " << (state() == QMediaPlayer::PlayingState); return (state() == QMediaPlayer::PlayingState); }
+    void seek(float pos) { setPosition(pos); }
+    void play() {
+      qDebug() << "play()";
+      QMediaPlayer::play();
+      if (twin) player2->play();
+    }
+    void pause() {
+      qDebug() << "pause()";
+	QMediaPlayer::pause();
+	if (twin) player2->pause();
+    }
+#endif
 
 private slots:
 #ifdef ENABLE_QTAV
-	void handleStateChange(QtAV::AVPlayer::State);
+    void handleStateChange(QtAV::AVPlayer::State);
 #else
-	void handleStateChange(int State);
+    void handleStateChange(QMediaPlayer::State);
 #endif
-	void update(qint64);
+    void handlePosChange(qint64);
 
 signals:
-	void statechanged(int);
+    void statechanged(int);
 
 private:
-	QGraphicsView* view;
+    QGraphicsView* view;
 #ifdef ENABLE_QTAV
     QtAV::GraphicsItemRenderer *videoItem1;
     QtAV::GraphicsItemRenderer *videoItem2;
 #else
-	QGraphicsVideoItem* videoItem1;
-	QGraphicsVideoItem* videoItem2;
+    QMediaPlayer* player2;
+    QGraphicsVideoItem* videoItem1;
+    QGraphicsVideoItem* videoItem2;
 #endif
-
-	float scale;
-	bool flagUpdate;
-	bool twin;
+    float scale;
+    bool flagUpdate;
+    bool twin;
 };
-
-
 
 #endif // _PLANETC_VIDEOPLAYER_HPP_
