@@ -64,7 +64,7 @@ Constellation::~Constellation()
 
 bool Constellation::read(const QString& record, StarMgr *starMgr)
 {
-    	//PLANETC_GC
+	//PLANETC_GC
 	artColor = StelUtils::strToVec3f("1.0,1.0,1.0"); //default
 	QSettings* conf = StelApp::getInstance().getSettings();
 	QString const_group = conf->value("constellation_group/"+record.left(3), QString("")).toString();
@@ -186,9 +186,9 @@ void Constellation::drawArtOptim(StelPainter& sPainter, const SphericalRegion& r
 		const float intensity = artFader.getInterstate() * artOpacity * artIntensityFovScale;
 		if (artTexture && intensity > 0.0f && region.intersects(boundingCap))
 		{
-		        //PLANETC_GC sPainter.setColor(intensity,intensity,intensity);
-		        sPainter.setColor(artColor[0]*intensity,artColor[1]*intensity,artColor[2]*intensity); //PLANETC_GC
-	
+			//PLANETC_GC sPainter.setColor(intensity,intensity,intensity);
+			sPainter.setColor(artColor[0]*intensity,artColor[1]*intensity,artColor[2]*intensity); //PLANETC_GC
+
 			// The texture is not fully loaded
 			if (artTexture->bind()==false)
 				return;
@@ -241,7 +241,9 @@ void Constellation::drawBoundaryOptim(StelPainter& sPainter) const
 
 	unsigned int i, j;
 	size_t size;
-	std::vector<Vec3d> *points;
+	Vec3f pt1, pt2;
+	Vec3d ptd1, ptd2;
+	std::vector<Vec3f> *points;
 
 	if (singleSelected) size = isolatedBoundarySegments.size();
 	else size = sharedBoundarySegments.size();
@@ -255,7 +257,13 @@ void Constellation::drawBoundaryOptim(StelPainter& sPainter) const
 
 		for (j=0;j<points->size()-1;j++)
 		{
-			sPainter.drawGreatCircleArc(points->at(j), points->at(j+1), &viewportHalfspace);
+			pt1 = points->at(j);
+			pt2 = points->at(j+1);
+			if (pt1*pt2>0.9999999f)
+				continue;
+			ptd1.set(pt1[0], pt1[1], pt1[2]);
+			ptd2.set(pt2[0], pt2[1], pt2[2]);
+			sPainter.drawGreatCircleArc(ptd1, ptd2, &viewportHalfspace);
 		}
 	}
 }

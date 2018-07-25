@@ -61,8 +61,8 @@ StelMovementMgr::StelMovementMgr(StelCore* acore)
 	, mouseZoomSpeed(30)
 	, flagEnableZoomKeys(true)
 	, flagEnableMoveKeys(true)
-	, keyMoveSpeed(0.00025f)
-	, keyZoomSpeed(0.00025f)
+	, keyMoveSpeed(0.00025)
+	, keyZoomSpeed(0.00025)
 	, flagMoveSlow(false)
 	, movementsSpeedFactor(1.0)
 	, move()
@@ -117,8 +117,8 @@ void StelMovementMgr::init()
 
 	flagEnableMoveAtScreenEdge = conf->value("navigation/flag_enable_move_at_screen_edge",false).toBool();
 	mouseZoomSpeed = conf->value("navigation/mouse_zoom",30).toInt();
-	flagEnableZoomKeys = conf->value("navigation/flag_enable_zoom_keys", true).toBool();
-	flagEnableMoveKeys = conf->value("navigation/flag_enable_move_keys", true).toBool();
+	flagEnableZoomKeys = conf->value("navigation/flag_enable_zoom_keys").toBool();
+	flagEnableMoveKeys = conf->value("navigation/flag_enable_move_keys").toBool();
 	keyMoveSpeed = conf->value("navigation/move_speed",0.0004f).toFloat();
 	keyZoomSpeed = conf->value("navigation/zoom_speed", 0.0004f).toFloat();
 	autoMoveDuration = conf->value ("navigation/auto_move_duration",1.5f).toFloat();
@@ -128,7 +128,7 @@ void StelMovementMgr::init()
 	flagIndicationMountMode = conf->value("gui/flag_indication_mount_mode", false).toBool();
 
 	minFov = conf->value("navigation/min_fov",0.001389).toDouble(); // default: minimal FOV = 5"
-	initFov = conf->value("navigation/init_fov",60.0).toDouble();
+	initFov = conf->value("navigation/init_fov",60.f).toFloat();
 	currentFov = initFov;
 
 
@@ -428,8 +428,7 @@ void StelMovementMgr::handleMouseWheel(QWheelEvent* event)
 			double jdNew;
 			StelUtils::getJDFromDate(&jdNew, year+floor(numSteps), month, day, hour, min, sec);
 			core->setJD(jdNew);
-			emit core->dateChanged();			
-			emit core->dateChangedByYear();
+			emit core->dateChanged();
 		}
 		else if (event->modifiers() & Qt::AltModifier)
 		{

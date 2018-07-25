@@ -47,8 +47,8 @@ public:
 		ACTIVE_CONFIRMED, // active radiant - confirmed data
 		ACTIVE_GENERIC    // active radiant - generic data
 	};
-        static float zhrFactor; //PLANETC_GC
-    
+	static float zhrFactor; //PLANETC_GC
+
 	//! @struct Activity
 	struct Activity
 	{

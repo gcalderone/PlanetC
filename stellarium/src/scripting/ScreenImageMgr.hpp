@@ -88,8 +88,8 @@ public:
 	virtual int imageHeight(void);
 	virtual int imageWidth(void);
 
-        virtual void setScale(float scale); //PLANETC_GC
-    
+	virtual void setScale(float scale); //PLANETC_GC
+
 	//! Set the image scale relative to the size originally loaded.
 	//! @param scaleX new (target) horizontal scale factor. Native size=1.
 	//! @param scaleY new (target) vertical scale factor. Native size=1.

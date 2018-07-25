@@ -355,8 +355,7 @@ private:
 	float pointerY;
 
 	ScreenImage* image[2];
-        PlanetC_VideoPlayer* video;
-	
+	PlanetC_VideoPlayer* video;
 	QMap<QWidget*, float> mapCustomTimeRate;
 
 	PlanetC_DateTimeDialog* dateTimeDialog;

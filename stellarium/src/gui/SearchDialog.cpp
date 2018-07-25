@@ -388,25 +388,13 @@ void SearchDialog::createDialogContent()
 	// list views initialization
 	connect(ui->objectTypeComboBox, SIGNAL(activated(int)), this, SLOT(updateListWidget(int)));
 	connect(ui->searchInListLineEdit, SIGNAL(textChanged(QString)), this, SLOT(searchListChanged(QString)));
-	connect(ui->searchInEnglishCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateListTab()));	
+	connect(ui->searchInEnglishCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateListTab()));
+	connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateListTab()));
 	updateListTab();
 
-	connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(changeTab(int)));
 	// Set the focus directly on the line edit
-	if (ui->tabWidget->currentIndex()==0)
+	if (ui->lineEditSearchSkyObject->isEnabled())
 		ui->lineEditSearchSkyObject->setFocus();
-}
-
-void SearchDialog::changeTab(int index)
-{
-	if (index==0) // First tab: Search
-		ui->lineEditSearchSkyObject->setFocus();
-
-	if (index==2) // Third tab: Lists
-	{
-		updateListTab();
-		ui->searchInListLineEdit->setFocus();
-	}
 }
 
 void SearchDialog::setHasSelectedFlag()
@@ -885,7 +873,7 @@ void SearchDialog::updateListTab()
 	ui->objectTypeComboBox->blockSignals(true);
 	ui->objectTypeComboBox->clear();	
 	QMap<QString, QString> modulesMap = objectMgr->objectModulesMap();
-	for (auto it = modulesMap.begin(); it != modulesMap.end(); ++it)
+	for (QMap<QString, QString>::const_iterator it = modulesMap.begin(); it != modulesMap.end(); ++it)
 	{
 		if (!objectMgr->listAllModuleObjects(it.key(), ui->searchInEnglishCheckBox->isChecked()).isEmpty())
 		{

@@ -57,9 +57,8 @@ void BarFrame::mouseMoveEvent(QMouseEvent *event)
 		targetPos.setY(0);
 	else if (targetPos.y() > lowerBoundY)
 		targetPos.setY(lowerBoundY);
-	
-	p->move(targetPos);
 	}//PLANETC_GC
+	p->move(targetPos);
 	//emit movedTo(targetPos);
 }
 
