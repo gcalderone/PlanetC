@@ -91,18 +91,6 @@ void PlanetC_StyleEditor::apply()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 PlanetC_Settings::PlanetC_Settings(QWidget* parent) :
 	PlanetC_Dialog(parent),
 	editor((PlanetC_UI*) parent)
@@ -110,7 +98,7 @@ PlanetC_Settings::PlanetC_Settings(QWidget* parent) :
 	//Default parameters
 	conf = StelApp::getInstance().getSettings();
 	pUIScale       = conf->value("planetc/consolle_scale" , "1.0").toFloat();
-	pUIRate        = conf->value("planetc/consolle_refresh_rate" , "2.0").toFloat();
+	pUIRate        = conf->value("planetc/consolle_refresh_rate" , "10.0").toFloat();
 	pClockFontSize = conf->value("planetc/clock_font_size", "22").toInt();
 	pShiftClock    = conf->value("planetc/shift_clock"    , "0.15").toFloat();
 	pShiftCardPo   = conf->value("planetc/shift_cardinals", "0.05").toFloat();

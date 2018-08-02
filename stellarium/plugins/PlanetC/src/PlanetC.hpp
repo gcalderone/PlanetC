@@ -118,7 +118,7 @@ public:
 	PlanetC();
 	virtual ~PlanetC()
 	{
-		enablePlanetC(false);
+		//enablePlanetC(false);
 	}
 
 	static PlanetC* getInstance();

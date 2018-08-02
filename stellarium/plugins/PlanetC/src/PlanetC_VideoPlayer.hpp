@@ -64,7 +64,10 @@ public:
 #else
   bool isPaused()  { qDebug() << "isPaused(): "  << (state() == QMediaPlayer::PausedState) ; return (state() == QMediaPlayer::PausedState); }
   bool isPlaying() { qDebug() << "isPlaying(): " << (state() == QMediaPlayer::PlayingState); return (state() == QMediaPlayer::PlayingState); }
-    void seek(float pos) { setPosition(pos); }
+    void seek(float pos) {
+	setPosition(round(pos * duration()));
+	if (twin) player2->setPosition(round(pos * duration()));
+    }
     void play() {
       qDebug() << "play()";
       QMediaPlayer::play();

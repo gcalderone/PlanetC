@@ -292,8 +292,9 @@ void PlanetC::enablePlanetC(bool b)
 		if(UI)
 		{
 			UI->timer.stop();
-			QThread::msleep(2 * UI->timer.interval() * 1.2);
+			QThread::msleep(2 * UI->timer.interval());
 			UI->close();
+			QThread::msleep(2 * UI->timer.interval());
 			delete UI;
 			UI = NULL;
 		}
@@ -327,6 +328,6 @@ void PlanetC::cloneView(bool f)
 
 void PlanetC::quit()
 {
-	enablePlanetC(false);
+	//enablePlanetC(false);
 	stel.app->quit();
 }

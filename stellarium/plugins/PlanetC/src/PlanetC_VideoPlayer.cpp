@@ -72,8 +72,8 @@ PlanetC_VideoPlayer::~PlanetC_VideoPlayer()
 #ifndef ENABLE_QTAV
     delete player2;
 #endif
-    delete videoItem1;
-    delete videoItem2;
+//    delete videoItem1;
+//    delete videoItem2;
 }
 
 

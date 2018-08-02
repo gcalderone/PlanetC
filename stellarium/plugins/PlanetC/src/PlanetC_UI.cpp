@@ -20,14 +20,14 @@
 #include <QtGlobal>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions_3_0>
+#include <QDebug>
 
 class myGL: public QOpenGLFunctions_3_0
 {
 public:
-    void init(QOpenGLContext* ctx)
-    {
-	if(!ctx->isOpenGLES())
-	    initializeOpenGLFunctions();
+    void init(QOpenGLContext* ctx) {
+	qDebug() << "\nCalling initializeOpenGLFunctions...\n";
+	initializeOpenGLFunctions();
     }
 };
 myGL* gl = NULL;
@@ -137,7 +137,11 @@ void PlanetC_GLWidget::cloneView(QOpenGLFramebufferObject* cloneFBO)
     gl->glEnd();
     doneCurrent();
 
-    update(); //schedules a repaint event to update the widget
+    // The `update()` here leads to flickering in the main window,
+    // especially when atmosphere is active.  To have a smooth update
+    // in the cloned view increase the UI refresh rate (values of
+    // 10-20 Hz are ok).
+    //update(); //schedules a repaint event to update the widget
 }
 
 
@@ -603,6 +607,12 @@ void PlanetC_UI::updateFromTimer()
 {
     if(!timer.isActive()) return;
 
+    static bool firstUpdate = true;
+    if (firstUpdate) {
+	setFullScreen(false);
+	firstUpdate = false;
+    }
+    
     //Scale the view to ensure no scrollbar is needed
     QSize  s1 = ui->gv->maximumViewportSize();
     QSize  s2 = ui->gv->mapFromScene(ui->gv->sceneRect()).boundingRect().size();
@@ -814,7 +824,6 @@ void PlanetC_UI::setFullScreen(bool b)
 		    planetc->msgBox("An external screen is required for automatic positioning, and it should extend the primary screen (no screen duplication).");
 		    ui->btnFullScreen->setChecked(false);
 		}
-	    return;
 	}
 
 
@@ -825,7 +834,7 @@ void PlanetC_UI::setFullScreen(bool b)
 	else
 	    screen2 = screen;
     if (!screen1) return;
-    if (!screen2) return;
+    if ((b)  &&  (!screen2)) return;
 
     //Setup PlanetC window
     if (b)
@@ -836,6 +845,7 @@ void PlanetC_UI::setFullScreen(bool b)
 	}
     else
 	{
+	    move(screen1->geometry().topLeft());
 	    showNormal();
 	}
 
@@ -862,6 +872,7 @@ void PlanetC_UI::setFullScreen(bool b)
 	}
     else
 	{
+	    stel.view->move(screen1->geometry().topLeft());
 	    stel.view->setFullScreen(false);
 	}
 }
