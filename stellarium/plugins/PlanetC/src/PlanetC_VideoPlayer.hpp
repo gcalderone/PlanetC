@@ -62,8 +62,8 @@ public:
 	QtAV::AVPlayer::play();
     }
 #else
-  bool isPaused()  { qDebug() << "isPaused(): "  << (state() == QMediaPlayer::PausedState) ; return (state() == QMediaPlayer::PausedState); }
-  bool isPlaying() { qDebug() << "isPlaying(): " << (state() == QMediaPlayer::PlayingState); return (state() == QMediaPlayer::PlayingState); }
+	bool isPaused()  { return (state() == QMediaPlayer::PausedState); }
+	bool isPlaying() { return (state() == QMediaPlayer::PlayingState); }
     void seek(float pos) {
 	setPosition(round(pos * duration()));
 	if (twin) player2->setPosition(round(pos * duration()));

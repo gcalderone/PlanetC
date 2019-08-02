@@ -30,10 +30,7 @@
 #include <QDial>
 #include <QMainWindow>
 #include <QTimer>
-#include <QGraphicsView>
 #include <math.h>
-
-
 
 
 /*
@@ -226,31 +223,5 @@ public:
 		setValue(sign * vInt);
 	}
 };
-
-
-class PlanetC_QGraphicsView : public QGraphicsView
-{
-	Q_OBJECT
-	
-public:
-	PlanetC_QGraphicsView(QWidget* parent) : QGraphicsView(parent) 
-	{
-		UI = NULL;
-		glWidget = NULL;
-	}
-	~PlanetC_QGraphicsView() {}
-	void init(class PlanetC_UI*, class PlanetC_GLWidget*);
-
-protected slots:
-	void resizeEvent(QResizeEvent* event);
-	void mouseMoveEvent(QMouseEvent* event);
-	void leaveEvent(QEvent* event);
-	void mouseReleaseEvent(QMouseEvent* event);
-
-private:
-	class PlanetC_UI* UI;
-	class PlanetC_GLWidget* glWidget;
-};
-
 
 #endif // _PLANETC_WIDGETS_HPP_

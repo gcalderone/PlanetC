@@ -67,4 +67,6 @@ ENDIF()
 
 
 SET_TARGET_PROPERTIES(PlanetC-static PROPERTIES COMPILE_FLAGS "-DQT_STATICPLUGIN")
-ADD_DEPENDENCIES(AllStaticPlugins PlanetC-static ${stellarium_UIS} stellarium_UIS_H )
+ADD_DEPENDENCIES(AllStaticPlugins PlanetC-static ${stellarium_UIS} )
+
+# stellarium_UIS_H

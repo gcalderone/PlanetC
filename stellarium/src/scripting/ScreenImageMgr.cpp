@@ -42,7 +42,7 @@
 ///////////////////////
 // ScreenImage class //
 ///////////////////////
-ScreenImage::ScreenImage(const QString& filename, float x, float y, bool show, float scale, float alpha, float fadeDuration, float rotation) //PLANETC_GC
+ScreenImage::ScreenImage(const QString& filename, float x, float y, bool show, float scale, float alpha, float fadeDuration, float rotation) //PLANETC_GC)
 	: tex(Q_NULLPTR), maxAlpha(alpha)
 {
 	QPixmap pixmap(filename);
@@ -131,7 +131,7 @@ void ScreenImage::setFlagShow(bool b)
 	fadeTimer->start();
 }
 
-bool ScreenImage::getFlagShow(void)
+bool ScreenImage::getFlagShow(void) const
 {
 	return (tex->opacity() > 0.);
 }
@@ -177,12 +177,12 @@ void ScreenImage::addXY(float x, float y, float duration)
 	setXY(currentPos.x() + x, currentPos.y() + y, duration);
 }
 
-int ScreenImage::imageWidth(void)
+int ScreenImage::imageWidth(void) const
 {
 	return tex->pixmap().size().width();
 }
 
-int ScreenImage::imageHeight(void)
+int ScreenImage::imageHeight(void) const
 {
 	return tex->pixmap().size().height();
 }
@@ -214,12 +214,12 @@ void ScreenImage::setScale(float scaleX, float scaleY, float duration)
 	scaleTimer->start();
 }
 
-float ScreenImage::imageScaleX()
+float ScreenImage::imageScaleX() const
 {
 	return scaleAnim->horizontalScaleAt(1.);
 }
 
-float ScreenImage::imageScaleY()
+float ScreenImage::imageScaleY() const
 {
 	return scaleAnim->verticalScaleAt(1.);
 }
@@ -243,7 +243,7 @@ void ScreenImageMgr::init()
 
 void ScreenImageMgr::draw(StelCore* core)
 {
-	foreach(ScreenImage* m, allScreenImages)
+	for (auto* m : allScreenImages)
 		if (m!=Q_NULLPTR)
 			m->draw(core);
 }
@@ -286,7 +286,7 @@ void ScreenImageMgr::deleteImage(const QString& id)
 	
 void ScreenImageMgr::deleteAllImages()
 {
-	foreach(ScreenImage* m, allScreenImages)
+	for (auto* m : allScreenImages)
 	{
 		if (m!=Q_NULLPTR)
 		{
@@ -297,12 +297,12 @@ void ScreenImageMgr::deleteAllImages()
 	allScreenImages.clear();
 }
 
-QStringList ScreenImageMgr::getAllImageIDs(void)
+QStringList ScreenImageMgr::getAllImageIDs(void) const
 {
 	return allScreenImages.keys();
 }
 
-bool ScreenImageMgr::getShowImage(const QString& id)
+bool ScreenImageMgr::getShowImage(const QString& id) const
 {
 	if (allScreenImages.contains(id))
 		if (allScreenImages[id]!=Q_NULLPTR)
@@ -310,7 +310,7 @@ bool ScreenImageMgr::getShowImage(const QString& id)
 	return false;
 }
 
-int ScreenImageMgr::getImageWidth(const QString& id)
+int ScreenImageMgr::getImageWidth(const QString& id) const
 {
 	if (allScreenImages.contains(id))
 		if (allScreenImages[id]!=Q_NULLPTR)
@@ -318,7 +318,7 @@ int ScreenImageMgr::getImageWidth(const QString& id)
 	return 0;
 }
 	
-int ScreenImageMgr::getImageHeight(const QString& id)
+int ScreenImageMgr::getImageHeight(const QString& id) const
 {
 	if (allScreenImages.contains(id))
 		if (allScreenImages[id]!=Q_NULLPTR)
@@ -326,7 +326,7 @@ int ScreenImageMgr::getImageHeight(const QString& id)
 	return 0;
 }
 
-float ScreenImageMgr::getImageScaleX(const QString& id)
+float ScreenImageMgr::getImageScaleX(const QString& id) const
 {
 	if (allScreenImages.contains(id))
 		if (allScreenImages[id]!=Q_NULLPTR)
@@ -334,7 +334,7 @@ float ScreenImageMgr::getImageScaleX(const QString& id)
 	return 0;
 }
 
-float ScreenImageMgr::getImageScaleY(const QString& id)
+float ScreenImageMgr::getImageScaleY(const QString& id) const
 {
 	if (allScreenImages.contains(id))
 		if (allScreenImages[id]!=Q_NULLPTR)
@@ -380,7 +380,7 @@ void ScreenImageMgr::setImageScale(const QString& id, float scaleX, float scaleY
 
 void ScreenImageMgr::update(double deltaTime)
 {
-	foreach(ScreenImage* m, allScreenImages)
+	for (auto* m : allScreenImages)
 		if (m!=Q_NULLPTR)
 			m->update(deltaTime);
 }

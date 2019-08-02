@@ -63,6 +63,10 @@ function planetc_AutoZoomIn(timeMove, timeZoom)
 /* ***************************************************************** */
 function planetc_AutoZoomOut(timeMove, timeZoom)
 {
+	// This must be done here otherwise core.moveToAltAzi would have
+	// no effect.
+    StelMovementMgr.setEquatorialMount(false);
+	
     if (planetc_domeMode) {
         //Reset Planetarium view
         planetc_autozoom.alt = 89.9;
@@ -106,8 +110,8 @@ function planetc_set_state(state) {
     LandscapeMgr.setFlagFog             (false);
     LandscapeMgr.setFlagAtmosphere      (false);
     LandscapeMgr.setFlagCardinalsPoints (false);
-    core.setMilkyWayIntensity           (0);
-    core.setZodiacalLightVisible        (false);
+    MilkyWay.setIntensity               (0);
+    ZodiacalLight.setFlagShow           (false);
 
     ConstellationMgr.setFlagArt         (false);
     ConstellationMgr.setFlagLines       (false);
@@ -183,8 +187,8 @@ function planetc_set_state(state) {
     LandscapeMgr.setFlagFog             (state.fog);
     LandscapeMgr.setFlagAtmosphere      (state.atmo);
     LandscapeMgr.setFlagCardinalsPoints (state.cardpo);
-    core.setMilkyWayIntensity           (state.milky);
-    core.setZodiacalLightVisible        (true);
+    MilkyWay.setIntensity               (state.milky);
+    ZodiacalLight.setFlagShow           (true);
 
     ConstellationMgr.setFlagIsolateSelected(state.selIsolated);
     ConstellationMgr.setFlagArt         (state.constArt);
@@ -236,7 +240,7 @@ function planetc_get_state() {
         , "fog"          : LandscapeMgr.getFlagFog()
         , "atmo"         : LandscapeMgr.getFlagAtmosphere()
         , "cardpo"       : LandscapeMgr.getFlagCardinalsPoints()
-        , "milky"        : core.getMilkyWayIntensity()
+        , "milky"        : MilkyWay.getIntensity()
 
         , "selIsolated"  : ConstellationMgr.getFlagIsolateSelected()
         , "constArt"     : ConstellationMgr.getFlagArt()

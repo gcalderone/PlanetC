@@ -190,28 +190,32 @@ public slots:
 };
 
 
-
-
-#include <QOpenGLWidget>
-
-class PlanetC_GLWidget : public QOpenGLWidget
-{
+class PlanetC_GLWidget : public QOpenGLWidget {
 	Q_OBJECT
-	friend class PlanetC_QGraphicsView;
-
+	friend class PlanetC;
+	
 public:
 	PlanetC_GLWidget(class PlanetC_UI*, QWidget*);
 	~PlanetC_GLWidget() {}
-	void cloneView(QOpenGLFramebufferObject* cloneFBO);
+
+	void cloneFrom(const QOpenGLFramebufferObject* sourceFBo);
+	void cloneView(QOpenGLFramebufferObject* sourceFBo);
+
+protected slots:
+	void mouseMoveEvent(QMouseEvent* event);
+	void leaveEvent(QEvent* event);
+	void mouseReleaseEvent(QMouseEvent* event);
 
 protected:
-	virtual void initializeGL() Q_DECL_OVERRIDE;
-	void resizeGL(int width, int height) Q_DECL_OVERRIDE {}
-	void paintGL() Q_DECL_OVERRIDE {}
+	virtual void initializeGL();
+	void resizeGL(int width, int height);
+	void paintGL();
 
 private:
 	class PlanetC_UI* UI;
-	bool sizeUpdated;
+	bool firstResize;
+	const QOpenGLFramebufferObject* sourceFBo;
+
 	QRect from;   //rectangle of main Stellarium view
 	QRectF fromF; //rectangle of main Stellarium view normalized in the range 0:1
 	QRect to;     //rectangle of the currently used area of this widget

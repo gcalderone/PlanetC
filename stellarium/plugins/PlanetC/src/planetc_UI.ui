@@ -631,11 +631,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <layout class="QVBoxLayout" name="layoutCloneView">
-         <item>
-          <widget class="PlanetC_QGraphicsView" name="gv"/>
-         </item>
-        </layout>
+        <layout class="QVBoxLayout" name="layoutCloneView"/>
        </widget>
       </item>
       <item>

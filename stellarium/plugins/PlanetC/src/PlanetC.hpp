@@ -48,7 +48,6 @@
 #include "../../Satellites/src/Satellites.hpp"
 
 
-
 struct StelModulesP
 {
 	StelApp* app;
@@ -156,8 +155,8 @@ public:
 		return UI;
 	}
 	bool getEqMountTrackAppPos();
-	void cloneView(QOpenGLFramebufferObject* buf);
-	void cloneView(bool);
+	void cloneFrom(const QOpenGLFramebufferObject* buf);
+	void cloneEnable(bool);
 
 public slots:
 	//! Enable plugin usage

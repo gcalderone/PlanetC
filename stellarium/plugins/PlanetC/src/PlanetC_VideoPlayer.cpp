@@ -143,7 +143,7 @@ void PlanetC_VideoPlayer::handlePosChange(qint64 timepos)
     QSize videoSize = QSize(videoItem1->nativeSize().width(), videoItem1->nativeSize().height());
 #endif
     QRectF viewRect = view->mapToScene(view->viewport()->rect()).boundingRect();
-    qDebug() << "Sizes " << videoSize << "  "  << viewRect;
+    //qDebug() << "Sizes " << videoSize << "  "  << viewRect;
     int maxW = viewRect.width();
     int maxH = viewRect.height();
     if (twin) maxH /= 2.;
@@ -154,7 +154,7 @@ void PlanetC_VideoPlayer::handlePosChange(qint64 timepos)
 
     int finalW = videoSize.width()  * scale2;
     int finalH = videoSize.height() * scale2;
-    qDebug() << "Final " << finalW << "  "  << finalH;
+    //qDebug() << "Final " << finalW << "  "  << finalH;
     
 #ifdef ENABLE_QTAV
     videoItem1->resizeRenderer(finalW, finalH);
@@ -175,7 +175,7 @@ void PlanetC_VideoPlayer::handlePosChange(qint64 timepos)
     if (twin) posY = 0.75;
     QPointF pos1(posX * viewRect.width(), posY * viewRect.height());
     videoItem1->setPos(pos1 - videoItem1->transformOriginPoint());		
-    qDebug() << "Pos " << pos1 << "  "  << pos1 - videoItem1->transformOriginPoint();
+    //qDebug() << "Pos " << pos1 << "  "  << pos1 - videoItem1->transformOriginPoint();
     videoItem1->setVisible(true);
     if (twin) {
 	posY = 0.25;
@@ -191,7 +191,7 @@ void PlanetC_VideoPlayer::handleStateChange(QtAV::AVPlayer::State state) {
 #else
 void PlanetC_VideoPlayer::handleStateChange(QMediaPlayer::State state) {
 #endif
-  qDebug() << "State: " << state;
+    //qDebug() << "State: " << state;
     int iState = 0;
     switch (state){
     case StoppedState: iState = 1; setVisible(false); break;

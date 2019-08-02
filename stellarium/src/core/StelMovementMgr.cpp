@@ -61,8 +61,8 @@ StelMovementMgr::StelMovementMgr(StelCore* acore)
 	, mouseZoomSpeed(30)
 	, flagEnableZoomKeys(true)
 	, flagEnableMoveKeys(true)
-	, keyMoveSpeed(0.00025)
-	, keyZoomSpeed(0.00025)
+	, keyMoveSpeed(0.00025f)
+	, keyZoomSpeed(0.00025f)
 	, flagMoveSlow(false)
 	, movementsSpeedFactor(1.0)
 	, move()
@@ -117,8 +117,8 @@ void StelMovementMgr::init()
 
 	flagEnableMoveAtScreenEdge = conf->value("navigation/flag_enable_move_at_screen_edge",false).toBool();
 	mouseZoomSpeed = conf->value("navigation/mouse_zoom",30).toInt();
-	flagEnableZoomKeys = conf->value("navigation/flag_enable_zoom_keys").toBool();
-	flagEnableMoveKeys = conf->value("navigation/flag_enable_move_keys").toBool();
+	flagEnableZoomKeys = conf->value("navigation/flag_enable_zoom_keys", true).toBool();
+	flagEnableMoveKeys = conf->value("navigation/flag_enable_move_keys", true).toBool();
 	keyMoveSpeed = conf->value("navigation/move_speed",0.0004f).toFloat();
 	keyZoomSpeed = conf->value("navigation/zoom_speed", 0.0004f).toFloat();
 	autoMoveDuration = conf->value ("navigation/auto_move_duration",1.5f).toFloat();
@@ -128,17 +128,17 @@ void StelMovementMgr::init()
 	flagIndicationMountMode = conf->value("gui/flag_indication_mount_mode", false).toBool();
 
 	minFov = conf->value("navigation/min_fov",0.001389).toDouble(); // default: minimal FOV = 5"
-	initFov = conf->value("navigation/init_fov",60.f).toFloat();
+	initFov = conf->value("navigation/init_fov",60.0).toDouble();
 	currentFov = initFov;
 
 
 	// we must set mount mode before potentially loading zenith views etc.
 	QString tmpstr = conf->value("navigation/viewing_mode", "horizon").toString();
-	if (tmpstr=="equator")
+	if (tmpstr.contains("equator", Qt::CaseInsensitive))
 		setMountMode(StelMovementMgr::MountEquinoxEquatorial);
 	else
 	{
-		if (tmpstr=="horizon")
+		if (tmpstr.contains("horizon", Qt::CaseInsensitive))
 			setMountMode(StelMovementMgr::MountAltAzimuthal);
 		else
 		{
@@ -187,7 +187,7 @@ void StelMovementMgr::init()
 
 	QString movementGroup = N_("Movement and Selection");
 	addAction("actionSwitch_Equatorial_Mount", N_("Miscellaneous"), N_("Switch between equatorial and azimuthal mount"), "equatorialMount", "Ctrl+M");
-	addAction("actionGoto_Selected_Object", movementGroup, N_("Center on selected object"), "tracking", "Ctrl+Space"); //PLANETC_GC
+	addAction("actionGoto_Selected_Object", movementGroup, N_("Center on selected object"), "tracking", "Ctrl+Space"); //PLANETG_GC
 	addAction("actionZoom_In_Auto", movementGroup, N_("Zoom in on selected object"), "autoZoomIn()", "/");
 	addAction("actionZoom_Out_Auto", movementGroup, N_("Zoom out"), "autoZoomOut()", "\\");
 	// AW: Same behaviour has action "actionGoto_Selected_Object" by the fact (Is it for backward compatibility?)
@@ -225,7 +225,7 @@ void StelMovementMgr::setEquatorialMount(bool b)
 		StelPainter painter(StelApp::getInstance().getCore()->getProjection2d());
 		int xPosition = projectorParams.viewportCenter[0] + projectorParams.viewportCenterOffset[0] - 0.5 * (painter.getFontMetrics().width(mode));
 		int yPosition = projectorParams.viewportCenter[1] + projectorParams.viewportCenterOffset[1] - 0.5 * (painter.getFontMetrics().height());
-		lastMessageID = GETSTELMODULE(LabelMgr)->labelScreen(mode, xPosition, yPosition, true, StelApp::getInstance().getBaseFontSize() + 3, "#99FF99", true, 2000);
+		lastMessageID = GETSTELMODULE(LabelMgr)->labelScreen(mode, xPosition, yPosition, true, StelApp::getInstance().getScreenFontSize() + 3, "#99FF99", true, 2000);
 	}
 }
 
@@ -428,7 +428,8 @@ void StelMovementMgr::handleMouseWheel(QWheelEvent* event)
 			double jdNew;
 			StelUtils::getJDFromDate(&jdNew, year+floor(numSteps), month, day, hour, min, sec);
 			core->setJD(jdNew);
-			emit core->dateChanged();
+			emit core->dateChanged();			
+			emit core->dateChangedByYear();
 		}
 		else if (event->modifiers() & Qt::AltModifier)
 		{
@@ -450,7 +451,7 @@ void StelMovementMgr::handleMouseWheel(QWheelEvent* event)
 	else
 	{
 		const float zoomFactor = std::exp(-mouseZoomSpeed * numSteps / 60.f);
-		const float zoomDuration = 0.2f * qAbs(numSteps);
+		const float zoomDuration = 0.2f;
 		zoomTo(getAimFov() * zoomFactor, zoomDuration);
 	}
 	event->accept();
@@ -500,7 +501,17 @@ void StelMovementMgr::handleMouseClicks(QMouseEvent* event)
 			break;
 		}
 		case Qt::LeftButton :
-			if (event->type()==QEvent::MouseButtonPress)
+			if (event->type()==QEvent::MouseButtonDblClick)
+			{
+				if (objectMgr->getWasSelected())
+				{
+					moveToObject(objectMgr->getSelectedObject()[0],autoMoveDuration);
+					setFlagTracking(true);
+				}
+				event->accept();
+				return;
+			}
+			else if (event->type()==QEvent::MouseButtonPress)
 			{
 				if (event->modifiers() & Qt::ControlModifier)
 				{
@@ -599,6 +610,12 @@ void StelMovementMgr::handleMouseClicks(QMouseEvent* event)
 		default: break;
 	}
 	return;
+}
+
+void StelMovementMgr::setInitFov(double fov)
+{
+	initFov=fov;
+	StelApp::getInstance().getSettings()->setValue("navigation/init_fov", fov);
 }
 
 void StelMovementMgr::setInitViewDirectionToCurrent()
@@ -1417,12 +1434,12 @@ void StelMovementMgr::updateAutoZoom(double deltaTime)
 		if( zoomMove.startFov > zoomMove.aimFov )
 		{
 			// slow down as we approach final view
-			c = 1 - (1-zoomMove.coef)*(1-zoomMove.coef)*(1-zoomMove.coef);
+			c = 1.0 - (1.0f-zoomMove.coef)*(1.0f-zoomMove.coef)*(1.0f-zoomMove.coef);
 		}
 		else
 		{
 			// speed up as we leave zoom target
-			c = (zoomMove.coef)*(zoomMove.coef)*(zoomMove.coef);
+			c = (double)zoomMove.coef * zoomMove.coef * zoomMove.coef;
 		}
 
 		double newFov=zoomMove.startFov + (zoomMove.aimFov - zoomMove.startFov) * c;

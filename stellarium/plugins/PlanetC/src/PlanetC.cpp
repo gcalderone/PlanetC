@@ -313,14 +313,15 @@ bool PlanetC::getEqMountTrackAppPos()
 }
 
 //Called from StelApp::applyRenderBuffer()
-void PlanetC::cloneView(QOpenGLFramebufferObject* buf)
+void PlanetC::cloneFrom(const QOpenGLFramebufferObject* buf)
 {
 	if(flagEnabled  &&  cloneEnabled) {
-		UI->glWidget->cloneView(buf);
+		UI->glWidget->cloneFrom(buf);
+		//((QGLWidget*) StelMainView::getInstance().viewport())->makeCurrent();
 	}
 }
 
-void PlanetC::cloneView(bool f)
+void PlanetC::cloneEnable(bool f)
 {
 	cloneEnabled = f;
 }
@@ -328,6 +329,6 @@ void PlanetC::cloneView(bool f)
 
 void PlanetC::quit()
 {
-	//enablePlanetC(false);
+	enablePlanetC(false);
 	stel.app->quit();
 }

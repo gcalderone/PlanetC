@@ -79,7 +79,6 @@ bool Constellation::read(const QString& record, StarMgr *starMgr)
 	        artColor = StelUtils::strToVec3f(  const_group_color  );
 	}
 	//PLANETC_GC
-
 	unsigned int HP;
 
 	abbreviation.clear();
@@ -135,7 +134,8 @@ void Constellation::drawOptim(StelPainter& sPainter, const StelCore* core, const
 
 	if (checkVisibility())
 	{
-		sPainter.setColor(lineColor[0], lineColor[1], lineColor[2], lineFader.getInterstate());
+		//PLANETC_GC sPainter.setColor(lineColor[0], lineColor[1], lineColor[2], lineFader.getInterstate());
+		sPainter.setColor(artColor[0]*lineColor[0], artColor[1]*lineColor[1], artColor[2]*lineColor[2], lineFader.getInterstate()); //PLANETC_GC
 
 		Vec3d star1;
 		Vec3d star2;
@@ -186,8 +186,7 @@ void Constellation::drawArtOptim(StelPainter& sPainter, const SphericalRegion& r
 		const float intensity = artFader.getInterstate() * artOpacity * artIntensityFovScale;
 		if (artTexture && intensity > 0.0f && region.intersects(boundingCap))
 		{
-			//PLANETC_GC sPainter.setColor(intensity,intensity,intensity);
-			sPainter.setColor(artColor[0]*intensity,artColor[1]*intensity,artColor[2]*intensity); //PLANETC_GC
+			sPainter.setColor(intensity,intensity,intensity);
 
 			// The texture is not fully loaded
 			if (artTexture->bind()==false)
@@ -212,7 +211,6 @@ const Constellation* Constellation::isStarIn(const StelObject* s) const
 {
 	for(unsigned int i=0;i<numberOfSegments*2;++i)
 	{
-
 		// constellation[i]==s test was not working
 		if (constellation[i]->getEnglishName()==s->getEnglishName())
 		{
@@ -241,9 +239,7 @@ void Constellation::drawBoundaryOptim(StelPainter& sPainter) const
 
 	unsigned int i, j;
 	size_t size;
-	Vec3f pt1, pt2;
-	Vec3d ptd1, ptd2;
-	std::vector<Vec3f> *points;
+	std::vector<Vec3d> *points;
 
 	if (singleSelected) size = isolatedBoundarySegments.size();
 	else size = sharedBoundarySegments.size();
@@ -257,13 +253,7 @@ void Constellation::drawBoundaryOptim(StelPainter& sPainter) const
 
 		for (j=0;j<points->size()-1;j++)
 		{
-			pt1 = points->at(j);
-			pt2 = points->at(j+1);
-			if (pt1*pt2>0.9999999f)
-				continue;
-			ptd1.set(pt1[0], pt1[1], pt1[2]);
-			ptd2.set(pt2[0], pt2[1], pt2[2]);
-			sPainter.drawGreatCircleArc(ptd1, ptd2, &viewportHalfspace);
+			sPainter.drawGreatCircleArc(points->at(j), points->at(j+1), &viewportHalfspace);
 		}
 	}
 }
@@ -289,7 +279,6 @@ bool Constellation::checkVisibility() const
 		// ...oops, it's a "inverted" season rule
 		if (((month>=1) && (month<=endSeason)) || ((month>=beginSeason) && (month<=12)))
 			visible = true;
-
 	}
 	return visible;
 }
@@ -302,9 +291,10 @@ QString Constellation::getInfoString(const StelCore *core, const InfoStringGroup
 
 	if (flags&Name)
 	{
+		QString shortname = getShortName();
 		oss << "<h2>" << getNameI18n();
-		if (!getShortName().isEmpty())
-			oss << " (" << getShortName() << ")";
+		if (!shortname.isEmpty() && shortname.toInt()==0)
+			oss << " (" << shortname << ")";
 		oss << "</h2>";
 	}
 

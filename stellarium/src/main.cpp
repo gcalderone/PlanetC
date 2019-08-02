@@ -51,6 +51,7 @@
 #include <QTextStream>
 #include <QTranslator>
 #include <QNetworkDiskCache>
+#include <QThread>
 
 #include <clocale>
 
@@ -59,6 +60,25 @@
 	//we use WIN32_LEAN_AND_MEAN so this needs to be included
 	//to use timeBeginPeriod/timeEndPeriod
 	#include <mmsystem.h>
+
+	// Default to High Performance Mode on machines with hybrid graphics
+	// Details: https://stackoverflow.com/questions/44174859/how-to-give-an-option-to-select-graphics-adapter-in-a-directx-11-application
+	extern "C"
+	{
+	#ifdef _MSC_VER
+		__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+		__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
+	#else
+		__attribute__((dllexport)) DWORD NvOptimusEnablement = 0x00000001;
+		__attribute__((dllexport)) int AmdPowerXpressRequestHighPerformance = 0x00000001;
+	#endif
+	}
+#else
+	extern "C"
+	{
+		int NvOptimusEnablement = 1;
+		int AmdPowerXpressRequestHighPerformance = 1;
+	}
 #endif //Q_OS_WIN
 
 //! @class CustomQTranslator
@@ -84,13 +104,13 @@ public:
 
 
 //! Copies the default configuration file.
-//! This function copies the default_config.ini file to config.ini (or other
+//! This function copies the default_cfg.ini file to config.ini (or other
 //! name specified on the command line located in the user data directory.
 void copyDefaultConfigFile(const QString& newPath)
 {
-	QString defaultConfigFilePath = StelFileMgr::findFile("data/default_config.ini");
+	QString defaultConfigFilePath = StelFileMgr::findFile("data/default_cfg.ini");
 	if (defaultConfigFilePath.isEmpty())
-		qFatal("ERROR copyDefaultConfigFile failed to locate data/default_config.ini. Please check your installation.");
+		qFatal("ERROR copyDefaultConfigFile failed to locate data/default_cfg.ini. Please check your installation.");
 	QFile::copy(defaultConfigFilePath, newPath);
 	if (!StelFileMgr::exists(newPath))
 	{
@@ -107,6 +127,28 @@ void clearCache()
 	cacheMgr->setCacheDirectory(StelFileMgr::getCacheDir());
 	cacheMgr->clear(); // Removes all items from the cache.
 }
+
+class SplashScreen : public QSplashScreen
+{
+    bool painted=false;
+    void paintEvent(QPaintEvent* e) override
+    {
+        QSplashScreen::paintEvent(e);
+        painted=true;
+    }
+public:
+    SplashScreen(QPixmap const& pixmap)
+        : QSplashScreen(pixmap)
+    {}
+    void ensureFirstPaint() const
+    {
+        while(!painted)
+        {
+            QThread::usleep(1000);
+            qApp->processEvents();
+        }
+    }
+};
 
 // Main stellarium procedure
 int main(int argc, char **argv)
@@ -169,10 +211,10 @@ int main(int argc, char **argv)
 	StelFileMgr::init();
 
 	QPixmap pixmap(StelFileMgr::findFile("data/splash.png"));
-	QSplashScreen splash(pixmap);
+	SplashScreen splash(pixmap);
 	splash.show();
 	splash.showMessage(StelUtils::getApplicationVersion() , Qt::AlignLeft, Qt::white);
-	app.processEvents();
+	splash.ensureFirstPaint();
 
 	// Log command line arguments.
 	QString argStr;
@@ -213,7 +255,7 @@ int main(int argc, char **argv)
 
 	// OK we start the full program.
 	// Print the console splash and get on with loading the program
-	QString versionLine = QString("This is %1 - http://www.stellarium.org").arg(StelUtils::getApplicationName());
+	QString versionLine = QString("This is %1 - %2").arg(StelUtils::getApplicationName()).arg(STELLARIUM_URL);
 	QString copyrightLine = QString("Copyright (C) %1 Fabien Chereau et al.").arg(COPYRIGHT_YEARS);
 	int maxLength = qMax(versionLine.size(), copyrightLine.size());
 	qDebug() << qPrintable(QString(" %1").arg(QString().fill('-', maxLength+2)));
@@ -223,57 +265,30 @@ int main(int argc, char **argv)
 	qDebug() << "Writing log file to:" << QDir::toNativeSeparators(StelLogger::getLogFileName());
 	qDebug() << "File search paths:";
 	int n=0;
-	foreach (const QString& i, StelFileMgr::getSearchPaths())
+	for (const auto& i : StelFileMgr::getSearchPaths())
 	{
 		qDebug() << " " << n << ". " << QDir::toNativeSeparators(i);
 		++n;
 	}
 
-	//PLANETC_GC -----------------------------------------
-	QSettings* confSettings = NULL;
-	try {
-		QDir dir(StelFileMgr::getUserDir());
-		dir.mkpath("planetc");
-		QString configName = StelFileMgr::getUserDir() + "/planetc/config.ini";
-		qDebug() << "Config file is: " << QDir::toNativeSeparators(configName);
-		
-		QFile f( configName );
-		if (f.exists()) {
-			if (CLIProcessor::argsGetOption(argList, "", "--restore-defaults"))
-		        f.remove();
-		}
-		
-		if (!f.exists()) {
-			qDebug() << "Config file " << configName << " does not exist. Copying the default file.";
-			QFile::copy(":PlanetC/config.ini", configName);
-			QFile::setPermissions(configName, QFile::permissions(configName) | QFileDevice::WriteOwner);
-		}
-		
-		confSettings = new QSettings(configName, StelIniFormat);
-		confSettings->setValue("video/fullscreen", false);
-		confSettings->setValue("video/screen_number", 0);
-		confSettings->setValue("video/screen_x",   0);
-		confSettings->setValue("video/screen_y",   0);
-		confSettings->setValue("video/screen_h", 800);
-		confSettings->setValue("video/screen_w", 800);
+	//PLANETC_GC
+	QString tmpFileName = StelFileMgr::getUserDir() + "/planetc/config.ini";
+	if(!QFile::exists(tmpFileName)) {
+	    qDebug() << "Config file " << tmpFileName << " does not exist. Copying the default file.";
+	    QFile::copy(":PlanetC/config.ini", tmpFileName);
+	    QFile::setPermissions(tmpFileName, QFile::permissions(tmpFileName) | QFileDevice::WriteOwner);
 	}
-	catch (std::runtime_error& e) {
-		qWarning() << "ERROR: Can't read/write configuration file: " << e.what();
-		qFatal("Aborting");
-	}
-	//----------------------------------------------------
 
-	/*
 	// Now manage the loading of the proper config file
 	QString configName;
 	try
 	{
-		configName = CLIProcessor::argsGetOptionWithArg(argList, "-c", "--config-file", "config.ini").toString();
+		configName = CLIProcessor::argsGetOptionWithArg(argList, "-c", "--config-file", "planetc/config.ini").toString();
 	}
 	catch (std::runtime_error& e)
 	{
-		qWarning() << "WARNING: while looking for --config-file option: " << e.what() << ". Using \"config.ini\"";
-		configName = "config.ini";
+		qWarning() << "WARNING: while looking for --config-file option: " << e.what() << ". Using \"planetc/config.ini\"";
+		configName = "planetc/config.ini";
 	}
 
 	QString configFileFullPath = StelFileMgr::findFile(configName, StelFileMgr::Flags(StelFileMgr::Writable|StelFileMgr::File));
@@ -287,17 +302,14 @@ int main(int argc, char **argv)
 	QSettings* confSettings = Q_NULLPTR;
 	if (StelFileMgr::exists(configFileFullPath))
 	{
+		confSettings = new QSettings(configFileFullPath, StelIniFormat, Q_NULLPTR);
 		// Implement "restore default settings" feature.
 		bool restoreDefaultConfigFile = false;
 		if (CLIProcessor::argsGetOption(argList, "", "--restore-defaults"))
-		{
 			restoreDefaultConfigFile=true;
-		}
 		else
-		{
-			confSettings = new QSettings(configFileFullPath, StelIniFormat, Q_NULLPTR);
 			restoreDefaultConfigFile = confSettings->value("main/restore_defaults", false).toBool();
-		}
+
 		if (!restoreDefaultConfigFile)
 		{
 			QString version = confSettings->value("main/version", "0.0.0").toString();
@@ -326,13 +338,16 @@ int main(int argc, char **argv)
 				}
 			}
 		}
+
 		if (restoreDefaultConfigFile)
 		{
 			if (confSettings)
 				delete confSettings;
+
 			QString backupFile(configFileFullPath.left(configFileFullPath.length()-3) + QString("old"));
 			if (QFileInfo(backupFile).exists())
 				QFile(backupFile).remove();
+
 			QFile(configFileFullPath).rename(backupFile);
 			copyDefaultConfigFile(configFileFullPath);
 			confSettings = new QSettings(configFileFullPath, StelIniFormat);
@@ -347,9 +362,17 @@ int main(int argc, char **argv)
 		confSettings = new QSettings(configFileFullPath, StelIniFormat);
 	}
 
+	//PLANETC_GC
+	confSettings->setValue("video/fullscreen", false);
+	confSettings->setValue("video/screen_number", 0);
+	confSettings->setValue("video/screen_x",   0);
+	confSettings->setValue("video/screen_y",   0);
+	confSettings->setValue("video/screen_h", 800);
+	confSettings->setValue("video/screen_w", 800);
+	//PLANETC_GC
+
 	Q_ASSERT(confSettings);
 	qDebug() << "Config file is: " << QDir::toNativeSeparators(configFileFullPath);
-	*/
 
 	#ifndef DISABLE_SCRIPTING
 	QString outputFile = StelFileMgr::getUserDir()+"/output.txt";
@@ -392,7 +415,7 @@ int main(int argc, char **argv)
 	QString baseFont = confSettings->value("gui/base_font_name", "DejaVu Sans").toString();
 	QFont tmpFont(baseFont);
 #endif
-	tmpFont.setPixelSize(confSettings->value("gui/base_font_size", 13).toInt());
+	tmpFont.setPixelSize(confSettings->value("gui/gui_font_size", 13).toInt());
 	QGuiApplication::setFont(tmpFont);
 
 	// Initialize translator feature

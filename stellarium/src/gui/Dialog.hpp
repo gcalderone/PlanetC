@@ -18,8 +18,8 @@
  */
 
 
-#ifndef _DIALOG_HPP_
-#define _DIALOG_HPP_
+#ifndef DIALOG_HPP
+#define DIALOG_HPP
 
 #include <QWidget>
 #include <QFrame>
@@ -44,8 +44,7 @@ class BarFrame : public QFrame
 Q_OBJECT
 public:
 	QPoint mousePos;
-  
-	//PLANETC_GC BarFrame(QWidget* parent) : QFrame(parent), moving(false) {}
+  	//PLANETC_GC BarFrame(QWidget* parent) : QFrame(parent), moving(false) {}
 	BarFrame(QWidget* parent) : QFrame(parent), moving(false), p(NULL) { //PLANETC_GC
 		if (p == NULL) { 
 			p = this;
@@ -60,7 +59,7 @@ public:
 		        p = (QWidget*) this->parent();
 		}
 	}
-
+    
 	virtual void mousePressEvent(QMouseEvent *event);
 	virtual void mouseReleaseEvent(QMouseEvent *event);
 	virtual void mouseMoveEvent(QMouseEvent *event);
@@ -87,4 +86,4 @@ public:
 };
 
 
-#endif // _DIALOG_HPP_
+#endif // DIALOG_HPP

@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
  */
 
-#ifndef _CONSTELLATION_HPP_
-#define _CONSTELLATION_HPP_
+#ifndef CONSTELLATION_HPP
+#define CONSTELLATION_HPP
 
 #include "StelObject.hpp"
 #include "StelUtils.hpp"
@@ -42,7 +42,7 @@ class StelPainter;
 //! abbreviation and Hipparcos catalogue numbers (taken from file: constellationship.fab),
 //! another entry in file constellation_names.eng.fab with the defining abbreviated name,
 //! nativeName, and translatable englishName (translation goes into nameI18),
-//! boundary shape from file constellations_boundaries.dat and an (optional) artistic pictorial representation.
+//! boundary shape from file constellation_boundaries.dat and an (optional) artistic pictorial representation.
 //! GZ NEW: The nativeName should be accessible in a GUI option, so that e.g. original names as written in a
 //! concrete book where a skyculture has been taken from can be assured even when translation is available.
 //! TODO: There should be a distinction between constellations and asterisms, which are "inofficial" figures within a sky culture.
@@ -179,8 +179,8 @@ private:
 	LinearFader artFader, lineFader, nameFader, boundaryFader;
 	//! Constellation art opacity
 	float artOpacity;
-	std::vector<std::vector<Vec3f> *> isolatedBoundarySegments;
-	std::vector<std::vector<Vec3f> *> sharedBoundarySegments;
+	std::vector<std::vector<Vec3d> *> isolatedBoundarySegments;
+	std::vector<std::vector<Vec3d> *> sharedBoundarySegments;
 
 	//! Currently we only need one color for all constellations, this may change at some point
 	static Vec3f lineColor;
@@ -195,4 +195,4 @@ private:
 	static float artIntensityFovScale;
 };
 
-#endif // _CONSTELLATION_HPP_
+#endif // CONSTELLATION_HPP

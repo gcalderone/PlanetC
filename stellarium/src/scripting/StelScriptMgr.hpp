@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
  */
 
-#ifndef _STELSCRIPTMGR_HPP_
-#define _STELSCRIPTMGR_HPP_
+#ifndef STELSCRIPTMGR_HPP
+#define STELSCRIPTMGR_HPP
 
 #include <QObject>
 #include <QStringList>
@@ -49,15 +49,15 @@ public:
 	StelScriptMgr(QObject *parent=Q_NULLPTR);
 	~StelScriptMgr();
 
-	QStringList getScriptList();
+	QStringList getScriptList() const;
 
 	//! Find out if a script is running
 	//! @return true if a script is running, else false
-	bool scriptIsRunning();
+	bool scriptIsRunning() const;
 	//! Get the ID (usually filename) of the currently running script
 	//! @return Empty string if no script is running, else the 
 	//! ID of the script which is running.
-	QString runningScriptId();
+	QString runningScriptId() const;
 
 	// Pre-processor functions
 	//! Preprocess script, esp. process include instructions.
@@ -179,7 +179,7 @@ public slots:
 	
 	//! Get the rate at which the script is running as a multiple of the normal
 	//! execution rate.
-	double getScriptRate();
+	double getScriptRate() const;
 
 	//! cause the emission of the scriptDebug signal. This is so that functions in
 	//! StelMainScriptAPI can explicitly send information to the ScriptConsole
@@ -192,8 +192,10 @@ public slots:
 	//! Reset output file and cause the emission of an (empty) scriptOutput signal.
 	void resetOutput(void);
 
-	//! Save output file to new file (in same directory as output.txt).
+	//! Save output file to new file.
 	//! This is required to allow reading with other program on Windows while output.txt is still open.
+	//! @param filename new filename. If this is not an absolute path, it will be created in the same directory as output.txt
+	//! @note For storing to absolute path names, set [scripts]/flag_script_allow_write_absolute_path=true.
 	void saveOutputAs(const QString &filename);
 
 	//! Pause a running script.
@@ -210,12 +212,10 @@ signals:
 	void runningScriptIdChanged(const QString& id);
 	//! Notification when a script starts running
 	void scriptRunning();
-	//! Notification when a script has stopped running 
-	void scriptStopped();
-
 	//! Notification when a script has been paused
 	void scriptPaused(); //PLANETC_GC
-
+	//! Notification when a script has stopped running 
+	void scriptStopped();
 	//! Notification of a script event - warnings, current execution line etc.
 	void scriptDebug(const QString&) const;
 	//! Notification of a script event - output line.
@@ -248,4 +248,4 @@ private:
 	StelScriptEngineAgent *agent;
 };
 
-#endif // _STELSCRIPTMGR_HPP_
+#endif // STELSCRIPTMGR_HPP

@@ -26,13 +26,16 @@
 #include "StelObjectMgr.hpp"
 #include "ConstellationMgr.hpp"
 #include "AsterismMgr.hpp"
+#include "HipsMgr.hpp"
 #include "NebulaMgr.hpp"
 #include "LandscapeMgr.hpp"
 #include "CustomObjectMgr.hpp"
+#include "HighlightMgr.hpp"
 #include "GridLinesMgr.hpp"
 #include "MilkyWay.hpp"
 #include "ZodiacalLight.hpp"
 #include "LabelMgr.hpp"
+#include "MarkerMgr.hpp"
 #include "SolarSystem.hpp"
 #include "NomenclatureMgr.hpp"
 #include "SporadicMeteorMgr.hpp"
@@ -80,6 +83,7 @@
 #include <QTimer>
 #include <QDir>
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <QScreen>
 #include <QDateTime>
 #ifdef ENABLE_SPOUT
@@ -113,10 +117,6 @@ Q_IMPORT_PLUGIN(SatellitesStelPluginInterface)
 
 #ifdef USE_STATIC_PLUGIN_TEXTUSERINTERFACE
 Q_IMPORT_PLUGIN(TextUserInterfaceStelPluginInterface)
-#endif
-
-#ifdef USE_STATIC_PLUGIN_LOGBOOK
-Q_IMPORT_PLUGIN(LogBookStelPluginInterface)
 #endif
 
 #ifdef USE_STATIC_PLUGIN_OCULARS
@@ -187,11 +187,10 @@ Q_IMPORT_PLUGIN(RemoteControlStelPluginInterface)
 Q_IMPORT_PLUGIN(RemoteSyncStelPluginInterface)
 #endif
 
-//PLANETC_GC
 #ifdef USE_STATIC_PLUGIN_PLANETC
 Q_IMPORT_PLUGIN(PlanetCStelPluginInterface)
-#include "../plugins/PlanetC/src/PlanetC.hpp"
 #endif
+
 
 // Initialize static variables
 StelApp* StelApp::singleton = Q_NULLPTR;
@@ -246,7 +245,7 @@ StelApp::StelApp(StelMainView *parent)
 	, totalDownloadedSize(0)
 	, nbUsedCache(0)
 	, totalUsedCacheSize(0)
-	, baseFontSize(13)
+	, screenFontSize(13)
 	, renderBuffer(Q_NULLPTR)
 	, viewportEffect(Q_NULLPTR)
 	, gl(Q_NULLPTR)
@@ -301,6 +300,7 @@ StelApp::~StelApp()
 	delete moduleMgr; moduleMgr=Q_NULLPTR; // Delete the secondary instance
 	delete actionMgr; actionMgr = Q_NULLPTR;
 	delete propMgr; propMgr = Q_NULLPTR;
+	delete renderBuffer; renderBuffer = Q_NULLPTR;
 
 	Q_ASSERT(singleton);
 	singleton = Q_NULLPTR;
@@ -415,8 +415,9 @@ void StelApp::init(QSettings* conf)
 	if (devicePixelsPerPixel>1)
 		qDebug() << "Detected a high resolution device! Device pixel ratio:" << devicePixelsPerPixel;
 
-	setBaseFontSize(confSettings->value("gui/base_font_size", 13).toInt());
-	
+	setScreenFontSize(confSettings->value("gui/screen_font_size", 13).toInt());
+	setGuiFontSize(confSettings->value("gui/gui_font_size", 13).toInt());
+
 	core = new StelCore();
 	if (saveProjW!=-1 && saveProjH!=-1)
 		core->windowHasBeenResized(0, 0, saveProjW, saveProjH);
@@ -425,6 +426,9 @@ void StelApp::init(QSettings* conf)
 	textureMgr = new StelTextureMgr();
 
 	networkAccessManager = new QNetworkAccessManager(this);
+	#if QT_VERSION >= 0x050900
+	networkAccessManager->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+	#endif
 	// Activate http cache if Qt version >= 4.5
 	QNetworkDiskCache* cache = new QNetworkDiskCache(networkAccessManager);
 	//make maximum cache size configurable (in MB)
@@ -434,7 +438,7 @@ void StelApp::init(QSettings* conf)
 
 	qDebug() << "Cache directory is: " << QDir::toNativeSeparators(cachePath);
 	cache->setCacheDirectory(cachePath);
-	networkAccessManager->setCache(cache);
+	networkAccessManager->setCache(cache);	
 	connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(reportFileDownloadFinished(QNetworkReply*)));
 
 	//create non-StelModule managers
@@ -455,6 +459,11 @@ void StelApp::init(QSettings* conf)
 	getModuleMgr().registerModule(stelObjectMgr);	
 
 	localeMgr->init();
+
+	// Hips surveys
+	HipsMgr* hipsMgr = new HipsMgr();
+	hipsMgr->init();
+	getModuleMgr().registerModule(hipsMgr);
 
 	// Init the solar system first
 	SolarSystem* ssystem = new SolarSystem();
@@ -537,10 +546,20 @@ void StelApp::init(QSettings* conf)
 
 	skyCultureMgr->init();
 
+	// User markers
+	MarkerMgr* skyMarkers = new MarkerMgr();
+	skyMarkers->init();
+	getModuleMgr().registerModule(skyMarkers);
+
 	// Init custom objects
 	CustomObjectMgr* custObj = new CustomObjectMgr();
 	custObj->init();
 	getModuleMgr().registerModule(custObj);
+
+	// Init hightlights
+	HighlightMgr* hlMgr = new HighlightMgr();
+	hlMgr->init();
+	getModuleMgr().registerModule(hlMgr);
 
 	//Create the script manager here, maybe some modules/plugins may want to connect to it
 	//It has to be initialized later after all modules have been loaded by calling initScriptMgr
@@ -600,7 +619,6 @@ void StelApp::init(QSettings* conf)
 				qApp->setProperty("spout", "");
 			}
 		}
-
 	}
 	else
 	{
@@ -616,7 +634,7 @@ void StelApp::initPlugIns()
 {
 	// Load dynamically all the modules found in the modules/ directories
 	// which are configured to be loaded at startup
-	foreach (StelModuleMgr::PluginDescriptor i, moduleMgr->getPluginsList())
+	for (const auto& i : moduleMgr->getPluginsList())
 	{
 		if (i.loadAtStartup==false)
 			continue;
@@ -684,7 +702,7 @@ void StelApp::update(double deltaTime)
 	moduleMgr->update();
 
 	// Send the event to every StelModule
-	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionUpdate))
+	for (auto* i : moduleMgr->getCallOrders(StelModule::ActionUpdate))
 	{
 		i->update(deltaTime);
 	}
@@ -694,7 +712,7 @@ void StelApp::update(double deltaTime)
 
 void StelApp::prepareRenderBuffer()
 {
-	//PLANETC_GC if (!viewportEffect) return;
+	if (!viewportEffect) return;
 	if (!renderBuffer)
 	{
 		StelProjector::StelProjectorParams params = core->getCurrentStelProjectorParams();
@@ -709,21 +727,7 @@ void StelApp::applyRenderBuffer(GLuint drawFbo)
 {
 	if (!renderBuffer) return;
 	GL(gl->glBindFramebuffer(GL_FRAMEBUFFER, drawFbo));
-	//PLANETC_GC
-	if (viewportEffect) //Draw using viewportEffect
-		viewportEffect->paintViewportBuffer(renderBuffer);
-	else
-	{
-		//Straightforward draw using viewportEffect
-		StelPainter sPainter(StelApp::getInstance().getCore()->getProjection2d());
-		sPainter.setColor(1,1,1);
-		sPainter.glFuncs()->glBindTexture(GL_TEXTURE_2D, renderBuffer->texture());
-		sPainter.drawRect2d(0, 0, renderBuffer->size().width(), renderBuffer->size().height());
-	}
-
-	PlanetC* p = PlanetC::getInstance();
-	if (p) p->cloneView(renderBuffer);
-	//PLANETC_GC
+	viewportEffect->paintViewportBuffer(renderBuffer);
 }
 
 //! Main drawing function called at each frame
@@ -743,7 +747,7 @@ void StelApp::draw()
 	core->preDraw();
 
 	const QList<StelModule*> modules = moduleMgr->getCallOrders(StelModule::ActionDraw);
-	foreach(StelModule* module, modules)
+	for (auto* module : modules)
 	{
 		module->draw(core);
 	}
@@ -754,7 +758,6 @@ void StelApp::draw()
 		spoutSender->captureAndSendFrame(drawFbo);
 #endif
 	applyRenderBuffer(drawFbo);
-
 }
 
 /*************************************************************************
@@ -762,27 +765,24 @@ void StelApp::draw()
 *************************************************************************/
 void StelApp::glWindowHasBeenResized(const QRectF& rect)
 {
+	// Remove the effect before resizing the core, or things get messy.
+	QString effect = getViewportEffect();
+	setViewportEffect("none");
 	if (core)
+	{
 		core->windowHasBeenResized(rect.x(), rect.y(), rect.width(), rect.height());
+	}
 	else
 	{
 		saveProjW = rect.width();
 		saveProjH = rect.height();
 	}
-	if (renderBuffer)
-	{
-		ensureGLContextCurrent();
-		delete renderBuffer;
-		renderBuffer = Q_NULLPTR;
-	}
+	// Force to recreate the viewport effect if any.
+	setViewportEffect(effect);
 #ifdef ENABLE_SPOUT
 	if (spoutSender)
 		spoutSender->resize(rect.width(),rect.height());
 #endif
-
-	//Tell PlanetC size has changed
-	PlanetC* p = PlanetC::getInstance();
-	if (p) p->cloneView((QOpenGLFramebufferObject*) NULL);
 }
 
 // Handle mouse clics
@@ -799,7 +799,7 @@ void StelApp::handleClick(QMouseEvent* inputEvent)
 	event.setAccepted(false);
 	
 	// Send the event to every StelModule
-	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionHandleMouseClicks))
+	for (auto* i : moduleMgr->getCallOrders(StelModule::ActionHandleMouseClicks))
 	{
 		i->handleMouseClicks(&event);
 		if (event.isAccepted())
@@ -837,7 +837,7 @@ void StelApp::handleWheel(QWheelEvent* event)
 	wheelEventDelta[deltaIndex] = 0;
 
 	// Send the event to every StelModule
-	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionHandleMouseClicks)) {
+	for (auto* i : moduleMgr->getCallOrders(StelModule::ActionHandleMouseClicks)) {
 		i->handleMouseWheel(&deltaEvent);
 		if (deltaEvent.isAccepted()) {
 			event->accept();
@@ -852,7 +852,7 @@ bool StelApp::handleMove(float x, float y, Qt::MouseButtons b)
 	if (viewportEffect)
 		viewportEffect->distortXY(x, y);
 	// Send the event to every StelModule
-	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionHandleMouseMoves))
+	for (auto* i : moduleMgr->getCallOrders(StelModule::ActionHandleMouseMoves))
 	{
 		if (i->handleMouseMoves(x*devicePixelsPerPixel, y*devicePixelsPerPixel, b))
 			return true;
@@ -874,7 +874,7 @@ void StelApp::handleKeys(QKeyEvent* event)
 		}
 	}
 	// Send the event to every StelModule
-	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionHandleKeys))
+	for (auto* i : moduleMgr->getCallOrders(StelModule::ActionHandleKeys))
 	{
 		i->handleKeys(event);
 		if (event->isAccepted())
@@ -886,7 +886,7 @@ void StelApp::handleKeys(QKeyEvent* event)
 void StelApp::handlePinch(qreal scale, bool started)
 {
 	// Send the event to every StelModule
-	foreach (StelModule* i, moduleMgr->getCallOrders(StelModule::ActionHandleMouseMoves))
+	for (auto* i : moduleMgr->getCallOrders(StelModule::ActionHandleMouseMoves))
 	{
 		if (i->handlePinch(scale, started))
 			return;
@@ -980,7 +980,7 @@ void StelApp::quit()
 void StelApp::setDevicePixelsPerPixel(float dppp)
 {
 	// Check that the device-independent pixel size didn't change
-	if (devicePixelsPerPixel!=dppp)
+	if (!viewportEffect && devicePixelsPerPixel!=dppp)
 	{
 		devicePixelsPerPixel = dppp;
 		StelProjector::StelProjectorParams params = core->getCurrentStelProjectorParams();
@@ -1027,24 +1027,55 @@ QString StelApp::getViewportEffect() const
 }
 
 // Diagnostics
-void StelApp::dumpModuleActionPriorities(StelModule::StelModuleActionName actionName)
+void StelApp::dumpModuleActionPriorities(StelModule::StelModuleActionName actionName) const
 {
 	const QList<StelModule*> modules = moduleMgr->getCallOrders(actionName);
-#if QT_VERSION >= 0x050500
+	#if QT_VERSION >= 0x050500
 	QMetaEnum me = QMetaEnum::fromType<StelModule::StelModuleActionName>();
 	qDebug() << "Module Priorities for action named" << me.valueToKey(actionName);
-#else
+	#else
 	qDebug() << "Module Priorities for action named" << actionName;
-#endif
+	#endif
 
-	foreach(StelModule* module, modules)
+	for (auto* module : modules)
 	{
 		module->draw(core);
 		qDebug() << " -- " << module->getCallOrder(actionName) << "Module: " << module->objectName();
 	}
 }
 
-StelModule* StelApp::getModule(const QString& moduleID)
+StelModule* StelApp::getModule(const QString& moduleID) const
 {
 	return getModuleMgr().getModule(moduleID);
+}
+void StelApp::setScreenFontSize(int s)
+{
+	if (screenFontSize!=s)
+	{
+		screenFontSize=s;
+		emit screenFontSizeChanged(s);
+	}
+}
+void StelApp::setGuiFontSize(int s)
+{
+	if (getGuiFontSize()!=s)
+	{
+		QFont font=QGuiApplication::font();
+		font.setPixelSize(s);
+		QGuiApplication::setFont(font);
+		emit guiFontSizeChanged(s);
+	}
+}
+int StelApp::getGuiFontSize() const
+{
+	return QGuiApplication::font().pixelSize();
+}
+
+void StelApp::setAppFont(QFont font)
+{
+	int oldSize=QGuiApplication::font().pixelSize();
+	font.setPixelSize(oldSize);
+	font.setStyleHint(QFont::AnyStyle, QFont::OpenGLCompatible);
+	QGuiApplication::setFont(font);
+	emit fontChanged(font);
 }
