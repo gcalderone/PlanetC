@@ -80,42 +80,20 @@ void PlanetC_GLWidget::mouseReleaseEvent(QMouseEvent* event)
 
 void PlanetC_GLWidget::initializeGL()
 {
-#ifdef Q_OS_WIN
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
-#ifndef QT_OPENGL_ES_2
-    mygl = new myGL();
-    mygl->init(ctx);
-#endif
-#else
     gl = new myGL();
     gl->init(QOpenGLContext::currentContext()); //context());
     //TODO setUpdateBehavior(QOpenGLWidget::PartialUpdate);
-#endif
 }
 
 void PlanetC_GLWidget::resizeGL(int width, int height)
 {
     gl->glViewport(0, 0, width, height);
 
-#ifdef Q_OS_WIN
-    if(!mygl)
-        {
-            qDebug() << __FUNCTION__;
-            qDebug() << "mygl not istantiayed";
-            return;
-        }
-    mygl->glMatrixMode(GL_PROJECTION);
-    mygl->glLoadIdentity();
-    mygl->glOrtho(0, width, height, 0, 1, -1);
-    mygl->glMatrixMode(GL_MODELVIEW);
-    mygl->glLoadIdentity();
-#else
     gl->glMatrixMode(GL_PROJECTION);
     gl->glLoadIdentity();
     gl->glOrtho(0, width, height, 0, 1, -1);
     gl->glMatrixMode(GL_MODELVIEW);
     gl->glLoadIdentity();
-#endif
     gl->glEnable(GL_TEXTURE_2D);
 
     firstResize = true;
@@ -172,19 +150,6 @@ void PlanetC_GLWidget::paintGL()
     gl->glClearColor(0., 0., 0., 0.); //(Qt::blue);
     gl->glClear(GL_COLOR_BUFFER_BIT);
     gl->glBindTexture(GL_TEXTURE_2D, sourceFBo->texture());
-#ifdef Q_OS_WIN
-    mygl->glColor3f(1, 1, 1);
-    mygl->glBegin(GL_QUADS);
-    mygl->glTexCoord2f(fromF.left() , fromF.bottom());
-    mygl->glVertex2f(to.left() , to.top());
-    mygl->glTexCoord2f(fromF.right(), fromF.bottom());
-    mygl->glVertex2f(to.right(), to.top());
-    mygl->glTexCoord2f(fromF.right(), fromF.top());
-    mygl->glVertex2f(to.right(), to.bottom());
-    mygl->glTexCoord2f(fromF.left() , fromF.top());
-    mygl->glVertex2f(to.left() , to.bottom());
-    mygl->glEnd();
-#else
     gl->glColor3f(1, 1, 1);
     gl->glBegin(GL_QUADS);
     gl->glTexCoord2f(fromF.left() , fromF.bottom());
@@ -196,7 +161,6 @@ void PlanetC_GLWidget::paintGL()
     gl->glTexCoord2f(fromF.left() , fromF.top());
     gl->glVertex2f(to.left() , to.bottom()); //glTexCoord2f(0, 0); glVertex2f(      0, height());
     gl->glEnd();
-#endif
 }
 
 
