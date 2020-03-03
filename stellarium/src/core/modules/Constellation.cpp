@@ -186,7 +186,8 @@ void Constellation::drawArtOptim(StelPainter& sPainter, const SphericalRegion& r
 		const float intensity = artFader.getInterstate() * artOpacity * artIntensityFovScale;
 		if (artTexture && intensity > 0.0f && region.intersects(boundingCap))
 		{
-			sPainter.setColor(intensity,intensity,intensity);
+			//PLANETC_GC sPainter.setColor(intensity,intensity,intensity);
+			sPainter.setColor(artColor[0]*intensity, artColor[1]*intensity, artColor[2]*intensity); //PLANETC_GC
 
 			// The texture is not fully loaded
 			if (artTexture->bind()==false)

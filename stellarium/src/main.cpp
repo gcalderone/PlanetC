@@ -272,6 +272,7 @@ int main(int argc, char **argv)
 	}
 
 	//PLANETC_GC
+	QDir::root().mkdir(StelFileMgr::getUserDir() + "/planetc");
 	QString tmpFileName = StelFileMgr::getUserDir() + "/planetc/config.ini";
 	if(!QFile::exists(tmpFileName)) {
 	    qDebug() << "Config file " << tmpFileName << " does not exist. Copying the default file.";

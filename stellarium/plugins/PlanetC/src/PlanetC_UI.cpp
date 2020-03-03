@@ -875,6 +875,9 @@ void PlanetC_UI::updateFromTimer()
     ui->btnEqMount->setChecked(stel.mvmgr->getEquatorialMount());
 
     ui->btnTrack->setChecked(stel.mvmgr->getFlagTracking());
+
+	if (domeMode)
+		stel.core->setFlagGravityLabels(true);
 }
 
 
