@@ -1,7 +1,7 @@
 # 
 #  Planetarium control (PlanetC) plug-in for Stellarium
 # 
-#  Copyright (C) 2016-2017 Giorgio Calderone
+#  Copyright (C) 2016-2020 Giorgio Calderone
 # 
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public icense

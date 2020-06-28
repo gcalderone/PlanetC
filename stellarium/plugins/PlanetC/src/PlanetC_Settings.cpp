@@ -1,7 +1,7 @@
 /*
  * Planetarium Control (PlanetC) plug-in for Stellarium
  *
- * Copyright (C) 2016-2018 Giorgio Calderone
+ * Copyright (C) 2016-2020 Giorgio Calderone
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -132,7 +132,7 @@ PlanetC_Settings::PlanetC_Settings(QWidget* parent) :
 	newHtml += "For info write at <a href=\"mailto:planetc.info@gmail.com\">planetc.info@gmail.com</a><br><br>";
 	newHtml += "This PlanetC version is based on <a href=\"http://stellarium.org/\">Stellarium</a> v" + StelUtils::getApplicationVersion() + "<br>";
 	newHtml += "</h4>";
-	newHtml += "<h3>Copyright &copy; 2016-2018 Giorgio Calderone</h3>";
+	newHtml += "<h3>Copyright &copy; 2016-2020 Giorgio Calderone</h3>";
 	newHtml += "<p>This program is free software; you can redistribute it and/or ";
 	newHtml += "modify it under the terms of the GNU General Public License ";
 	newHtml += "as published by the Free Software Foundation; either version 2 ";
