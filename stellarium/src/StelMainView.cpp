@@ -842,6 +842,7 @@ void StelMainView::init()
 		     conf->value("video/screen_h", screenGeom.height()).toInt());
 
 	bool fullscreen = conf->value("video/fullscreen", true).toBool();
+	fullscreen = false; //PLANETC_GC
 
 	// Without this, the screen is not shown on a Mac + we should use resize() for correct work of fullscreen/windowed mode switch. --AW WTF???
 	resize(size);
@@ -861,7 +862,9 @@ void StelMainView::init()
 		setFullScreen(false);
 		int x = conf->value("video/screen_x", 0).toInt();
 		int y = conf->value("video/screen_y", 0).toInt();
-		move(x + screenGeom.x(), y + screenGeom.y());
+		move(1, 1); //PLANETC_GC move(x + screenGeom.x(), y + screenGeom.y());
+		move(1, 1); //PLANETC_GC move(x + screenGeom.x(), y + screenGeom.y());
+		resize(800, 800); //PLANETC_GC
 	}
 
 	flagInvertScreenShotColors = conf->value("main/invert_screenshots_colors", false).toBool();
@@ -1310,7 +1313,7 @@ void StelMainView::setFullScreen(bool b)
 			QRect screenGeom = desktop->screenGeometry(screen);
 			int x = conf->value("video/screen_x", 0).toInt();
 			int y = conf->value("video/screen_y", 0).toInt();
-			move(x + screenGeom.x(), y + screenGeom.y());
+			move(1, 1); //PLANETC_GC move(x + screenGeom.x(), y + screenGeom.y());
 		}
 	}
 	emit fullScreenChanged(b);
