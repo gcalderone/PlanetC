@@ -418,9 +418,9 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
     connect(ui->btnMeteorRadiant   , SIGNAL(toggled(bool))    , this          , SLOT(toggleMeteorRadiant(bool)));
     connect(ui->btnMeteorIncrRate  , SIGNAL(toggled(bool))    , this          , SLOT(toggleMeteorIncrRate(bool)));
 
-    connect(ui->btnSatellites     , SIGNAL(toggled(bool))     , stel.satel    , SLOT(setFlagHints(bool)));
-    connect(ui->btnSatelliteNames , SIGNAL(toggled(bool))     , stel.satel    , SLOT(setFlagLabels(bool)));
-    //connect(ui->btnSatelliteTrails, SIGNAL(toggled(bool))     , stel.satel    , SLOT(setOrbitLinesFlag(bool)));
+    connect(ui->btnSatellites     , SIGNAL(toggled(bool))     , stel.satel    , SLOT(setFlagHintsVisible(bool)));
+    connect(ui->btnSatelliteNames , SIGNAL(toggled(bool))     , stel.satel    , SLOT(setFlagLabelsVisible(bool)));
+    connect(ui->btnSatelliteTrails, SIGNAL(toggled(bool))     , stel.satel    , SLOT(setFlagOrbitLines(bool)));
 
     connect(ui->btnConstel         , SIGNAL(toggled(bool))    , stel.constmgr , SLOT(setFlagLines(bool)));
     connect(ui->btnConstelNames    , SIGNAL(toggled(bool))    , stel.constmgr , SLOT(setFlagLabels(bool)));
@@ -649,7 +649,7 @@ void PlanetC_UI::draw()
         //Draw location/date/time labels
         if(currentLocDateTime != "")
             {
-                static Vec3f color = StelUtils::strToVec3f(stel.conf->value("planetc/clock_color", "0.9,0.5,0.1").toString());
+                static Vec3f color(stel.conf->value("planetc/clock_color", "0.9,0.5,0.1").toString());
                 sPainter.setColor(color[0],color[1],color[2],0.8);
 
                 shift = pOpt->getShiftClock();
@@ -668,7 +668,7 @@ void PlanetC_UI::draw()
         //Draw cardinal points
         if(ui->btnShowCard->isChecked())
             {
-                static Vec3f color = StelUtils::strToVec3f(stel.conf->value("color/cardinal_color", "0.8,0.2,0.1").toString());
+                static Vec3f color(stel.conf->value("color/cardinal_color", "0.8,0.2,0.1").toString());
                 sPainter.setColor(color[0],color[1],color[2]);
 
                 QString d[4];
@@ -848,8 +848,8 @@ void PlanetC_UI::updateFromTimer()
     ui->btnMeteor->setChecked(stel.meteor->getEnablePlugin());
     ui->btnMeteorRadiant->setChecked(stel.meteor->getEnableMarker());
 
-    ui->btnSatellites->setChecked(stel.satel->getFlagHints());
-    ui->btnSatelliteNames->setChecked(stel.satel->getFlagLabels());
+    ui->btnSatellites->setChecked(stel.satel->getFlagHintsVisible());
+    ui->btnSatelliteNames->setChecked(stel.satel->getFlagLabelsVisible());
     //ui->btnSatelliteTrails->setChecked(stel.satel->getOrbitLinesFlag());
 
     ui->btnConstel->setChecked(stel.constmgr->getFlagLines());

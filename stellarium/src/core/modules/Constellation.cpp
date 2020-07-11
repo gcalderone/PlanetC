@@ -40,9 +40,9 @@
 
 const QString Constellation::CONSTELLATION_TYPE = QStringLiteral("Constellation");
 
-Vec3f Constellation::lineColor = Vec3f(0.4,0.4,0.8);
-Vec3f Constellation::labelColor = Vec3f(0.4,0.4,0.8);
-Vec3f Constellation::boundaryColor = Vec3f(0.8,0.3,0.3);
+Vec3f Constellation::lineColor = Vec3f(0.4f,0.4f,0.8f);
+Vec3f Constellation::labelColor = Vec3f(0.4f,0.4f,0.8f);
+Vec3f Constellation::boundaryColor = Vec3f(0.8f,0.3f,0.3f);
 bool Constellation::singleSelected = false;
 bool Constellation::seasonalRuleEnabled = false;
 float Constellation::artIntensityFovScale = 1.0f;
@@ -65,7 +65,7 @@ Constellation::~Constellation()
 bool Constellation::read(const QString& record, StarMgr *starMgr)
 {
 	//PLANETC_GC
-	artColor = StelUtils::strToVec3f("1.0,1.0,1.0"); //default
+	artColor = Vec3f(QString("1.0,1.0,1.0")); //default
 	QSettings* conf = StelApp::getInstance().getSettings();
 	QString const_group = conf->value("constellation_group/"+record.left(3), QString("")).toString();
 
@@ -76,7 +76,7 @@ bool Constellation::read(const QString& record, StarMgr *starMgr)
 		if (const_group_color.length() == 0)
 	        qDebug() << "WARNING: Color missing for constellation group: " << const_group;
 		else
-	        artColor = StelUtils::strToVec3f(  const_group_color  );
+	        artColor = Vec3f(  const_group_color  );
 	}
 	//PLANETC_GC
 	unsigned int HP;
@@ -86,14 +86,10 @@ bool Constellation::read(const QString& record, StarMgr *starMgr)
 
 	QString buf(record);
 	QTextStream istr(&buf, QIODevice::ReadOnly);
-	QString abb;
-	istr >> abb >> numberOfSegments;
+	// allow mixed-case abbreviations now that they can be displayed on screen. We then need toUpper() in comparisons.
+	istr >> abbreviation >> numberOfSegments;
 	if (istr.status()!=QTextStream::Ok)
 		return false;
-
-	// It's better to allow mixed-case abbreviations now that they can be displayed on screen. We then need toUpper() in comparisons.
-	//abbreviation = abb.toUpper();
-	abbreviation=abb;
 
 	constellation = new StelObjectP[numberOfSegments*2];
 	for (unsigned int i=0;i<numberOfSegments*2;++i)
@@ -102,21 +98,18 @@ bool Constellation::read(const QString& record, StarMgr *starMgr)
 		istr >> HP;
 		if(HP == 0)
 		{
-			// TODO: why is this delete commented?
-			// delete[] constellation;
 			return false;
 		}
 
-		constellation[i]=starMgr->searchHP(HP);
+		constellation[i]=starMgr->searchHP(static_cast<int>(HP));
 		if (!constellation[i])
 		{
-			qWarning() << "Error in Constellation " << abbreviation << " asterism : can't find star HP= " << HP;
-			// TODO: why is this delete commented?
-			// delete[] constellation;
+			qWarning() << "Error in Constellation " << abbreviation << ": can't find star HIP" << HP;
 			return false;
 		}
 	}
 
+	// Name tag should go to constellation's centre of gravity
 	XYZname.set(0.,0.,0.);
 	for(unsigned int ii=0;ii<numberOfSegments*2;++ii)
 	{
@@ -152,7 +145,7 @@ void Constellation::drawOptim(StelPainter& sPainter, const StelCore* core, const
 
 void Constellation::drawName(StelPainter& sPainter, ConstellationMgr::ConstellationDisplayStyle style) const
 {
-	if (!nameFader.getInterstate())
+	if (nameFader.getInterstate()==0.0f)
 		return;
 
 	if (checkVisibility())
@@ -175,7 +168,7 @@ void Constellation::drawName(StelPainter& sPainter, ConstellationMgr::Constellat
 		}
 
 		sPainter.setColor(labelColor[0], labelColor[1], labelColor[2], nameFader.getInterstate());
-		sPainter.drawText(XYname[0], XYname[1], name, 0., -sPainter.getFontMetrics().width(name)/2, 0, false);
+		sPainter.drawText(static_cast<float>(XYname[0]), static_cast<float>(XYname[1]), name, 0., -sPainter.getFontMetrics().boundingRect(name).width()/2, 0, false);
 	}
 }
 
@@ -232,7 +225,7 @@ void Constellation::update(int deltaTime)
 
 void Constellation::drawBoundaryOptim(StelPainter& sPainter) const
 {
-	if (!boundaryFader.getInterstate())
+	if (boundaryFader.getInterstate()==0.0f)
 		return;
 
 	sPainter.setBlending(true);
@@ -286,7 +279,7 @@ bool Constellation::checkVisibility() const
 
 QString Constellation::getInfoString(const StelCore *core, const InfoStringGroup &flags) const
 {
-	Q_UNUSED(core);
+	Q_UNUSED(core)
 	QString str;
 	QTextStream oss(&str);
 
@@ -314,9 +307,9 @@ StelObjectP Constellation::getBrightestStarInConstellation(void) const
 	StelObjectP brightest;
 	// maybe the brightest star has always odd index,
 	// so check all segment endpoints:
-	for (int i=2*numberOfSegments-1;i>=0;i--)
+	for (int i=2*static_cast<int>(numberOfSegments)-1;i>=0;i--)
 	{
-		const float Mag = constellation[i]->getVMagnitude(0);
+		const float Mag = constellation[i]->getVMagnitude(Q_NULLPTR);
 		if (Mag < maxMag)
 		{
 			brightest = constellation[i];

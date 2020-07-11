@@ -27,6 +27,7 @@
 #include "StelLocaleMgr.hpp"
 #include "StelTranslator.hpp"
 #include "Planet.hpp"
+#include "SpecialMarkersMgr.hpp"
 #include "CustomObjectMgr.hpp"
 
 #include "StelObjectMgr.hpp"
@@ -139,17 +140,29 @@ SearchDialog::SearchDialog(QObject* parent)
 	, proxyModel(Q_NULLPTR)
 	, flagHasSelectedText(false)
 {
+	setObjectName("SearchDialog");
 	ui = new Ui_searchDialogForm;
 	simbadSearcher = new SimbadSearcher(this);
 	objectMgr = GETSTELMODULE(StelObjectMgr);
 	Q_ASSERT(objectMgr);
 
+	StelApp::getInstance().getStelPropertyManager()->registerObject(this);
 	conf = StelApp::getInstance().getSettings();
-	useSimbad = conf->value("search/flag_search_online", true).toBool();	
+	enableSimbadSearch(conf->value("search/flag_search_online", true).toBool());
 	useStartOfWords = conf->value("search/flag_start_words", false).toBool();
 	useLockPosition = conf->value("search/flag_lock_position", true).toBool();
+	useFOVCenterMarker = conf->value("search/flag_fov_center_marker", true).toBool();
+	fovCenterMarkerState = GETSTELMODULE(SpecialMarkersMgr)->getFlagFOVCenterMarker();
 	simbadServerUrl = conf->value("search/simbad_server_url", DEF_SIMBAD_URL).toString();
 	setCurrentCoordinateSystemKey(conf->value("search/coordinate_system", "equatorialJ2000").toString());	
+
+	setSimbadQueryDist( conf->value("search/simbad_query_dist",  30).toInt());
+	setSimbadQueryCount(conf->value("search/simbad_query_count",  3).toInt());
+	setSimbadGetsIds(   conf->value("search/simbad_query_IDs",        true ).toBool());
+	setSimbadGetsSpec(  conf->value("search/simbad_query_spec",       false).toBool());
+	setSimbadGetsMorpho(conf->value("search/simbad_query_morpho",     false).toBool());
+	setSimbadGetsTypes( conf->value("search/simbad_query_types",      false).toBool());
+	setSimbadGetsDims(  conf->value("search/simbad_query_dimensions", false).toBool());
 }
 
 SearchDialog::~SearchDialog()
@@ -184,7 +197,7 @@ void SearchDialog::styleChanged()
 void SearchDialog::setCurrentCoordinateSystemKey(QString key)
 {
 	const QMetaEnum& en = metaObject()->enumerator(metaObject()->indexOfEnumerator("CoordinateSystem"));
-	CoordinateSystem coordSystem = (CoordinateSystem)en.keyToValue(key.toLatin1().data());
+	CoordinateSystem coordSystem = static_cast<CoordinateSystem>(en.keyToValue(key.toLatin1().data()));
 	if (coordSystem<0)
 	{
 		qWarning() << "[Search Tool] Unknown coordinate system: " << key << "setting \"equatorialJ2000\" instead";
@@ -316,6 +329,8 @@ void SearchDialog::createDialogContent()
 	connect(ui->TitleBar, SIGNAL(movedTo(QPoint)), this, SLOT(handleMovedTo(QPoint)));
 	connect(ui->lineEditSearchSkyObject, SIGNAL(textChanged(const QString&)),
 		     this, SLOT(onSearchTextChanged(const QString&)));
+	connect(ui->simbadCooQueryButton, SIGNAL(clicked()), this, SLOT(lookupCoordinates()));
+	connect(GETSTELMODULE(StelObjectMgr), SIGNAL(selectedObjectChanged(StelModule::StelModuleSelectAction)), this, SLOT(clearSimbadText(StelModule::StelModuleSelectAction)));
 	connect(ui->pushButtonGotoSearchSkyObject, SIGNAL(clicked()), this, SLOT(gotoObject()));
 	onSearchTextChanged(ui->lineEditSearchSkyObject->text());
 	connect(ui->lineEditSearchSkyObject, SIGNAL(returnPressed()), this, SLOT(gotoObject()));
@@ -371,8 +386,16 @@ void SearchDialog::createDialogContent()
 	connect(ui->psiPushButton, SIGNAL(clicked(bool)), this, SLOT(greekLetterClicked()));
 	connect(ui->omegaPushButton, SIGNAL(clicked(bool)), this, SLOT(greekLetterClicked()));
 
-	connect(ui->simbadGroupBox, SIGNAL(clicked(bool)), this, SLOT(enableSimbadSearch(bool)));
-	ui->simbadGroupBox->setChecked(useSimbad);
+	connectBoolProperty(ui->simbadGroupBox, "SearchDialog.useSimbad");
+	//connect(ui->simbadGroupBox, SIGNAL(clicked(bool)), this, SLOT(enableSimbadSearch(bool)));
+	//ui->simbadGroupBox->setChecked(useSimbad);
+	connectIntProperty(ui->searchRadiusSpinBox,    "SearchDialog.simbadDist");
+	connectIntProperty(ui->resultsSpinBox,         "SearchDialog.simbadCount");
+	connectBoolProperty(ui->allIDsCheckBox,        "SearchDialog.simbadGetIds");
+	connectBoolProperty(ui->spectralClassCheckBox, "SearchDialog.simbadGetSpec");
+	connectBoolProperty(ui->morphoCheckBox,        "SearchDialog.simbadGetMorpho");
+	connectBoolProperty(ui->typesCheckBox,         "SearchDialog.simbadGetTypes");
+	connectBoolProperty(ui->dimsCheckBox,          "SearchDialog.simbadGetDims");
 
 	populateSimbadServerList();
 	idx = ui->serverListComboBox->findData(simbadServerUrl, Qt::UserRole, Qt::MatchCaseSensitive);
@@ -386,6 +409,9 @@ void SearchDialog::createDialogContent()
 
 	connect(ui->checkBoxUseStartOfWords, SIGNAL(clicked(bool)), this, SLOT(enableStartOfWordsAutofill(bool)));
 	ui->checkBoxUseStartOfWords->setChecked(useStartOfWords);
+
+	connect(ui->checkBoxFOVCenterMarker, SIGNAL(clicked(bool)), this, SLOT(enableFOVCenterMarker(bool)));
+	ui->checkBoxFOVCenterMarker->setChecked(useFOVCenterMarker);
 
 	connect(ui->checkBoxLockPosition, SIGNAL(clicked(bool)), this, SLOT(enableLockPosition(bool)));
 	ui->checkBoxLockPosition->setChecked(useLockPosition);
@@ -401,7 +427,7 @@ void SearchDialog::createDialogContent()
 	connect(ui->objectTypeComboBox, SIGNAL(activated(int)), this, SLOT(updateListView(int)));
 	connect(ui->searchInListLineEdit, SIGNAL(textChanged(const QString&)), proxyModel, SLOT(setFilterWildcard(const QString&)));
 	connect(ui->searchInEnglishCheckBox, SIGNAL(toggled(bool)), this, SLOT(updateListTab()));
-	QAction *clearAction = ui->searchInListLineEdit->addAction(QIcon(":/graphicGui/backspace-white.png"), QLineEdit::ActionPosition::TrailingPosition);
+	QAction *clearAction = ui->searchInListLineEdit->addAction(QIcon(":/graphicGui/uieBackspaceInputButton.png"), QLineEdit::ActionPosition::TrailingPosition);
 	connect(clearAction, SIGNAL(triggered()), this, SLOT(searchListClear()));
 	updateListTab();
 
@@ -409,14 +435,27 @@ void SearchDialog::createDialogContent()
 	// Set the focus directly on the line edit
 	if (ui->tabWidget->currentIndex()==0)
 		ui->lineEditSearchSkyObject->setFocus();
+
+	QString style = "QLabel { color: rgb(238, 238, 238); }";
+	ui->simbadStatusLabel->setStyleSheet(style);
+	ui->labelGreekLetterTitle->setStyleSheet(style);
+	ui->simbadCooStatusLabel->setStyleSheet(style);
 }
 
 void SearchDialog::changeTab(int index)
 {
-	if (index==0) // First tab: Search
+	if (index==0) // Search Tab
 		ui->lineEditSearchSkyObject->setFocus();
 
-	if (index==2) // Third tab: Lists
+	if (index==2) // Position
+	{
+		if (useFOVCenterMarker)
+			GETSTELMODULE(SpecialMarkersMgr)->setFlagFOVCenterMarker(true);
+	}
+	else
+		GETSTELMODULE(SpecialMarkersMgr)->setFlagFOVCenterMarker(fovCenterMarkerState);
+
+	if (index==3) // Lists
 	{
 		updateListTab();
 		ui->searchInListLineEdit->setFocus();
@@ -430,9 +469,60 @@ void SearchDialog::setHasSelectedFlag()
 
 void SearchDialog::enableSimbadSearch(bool enable)
 {
-	useSimbad = enable;	
+	useSimbad = enable;
 	conf->setValue("search/flag_search_online", useSimbad);
-	ui->simbadStatusLabel->clear();
+	if (dialog && ui->simbadStatusLabel) ui->simbadStatusLabel->clear();
+	if (dialog && ui->simbadCooStatusLabel) ui->simbadCooStatusLabel->clear();
+	emit simbadUseChanged(enable);
+}
+
+
+void SearchDialog::setSimbadQueryDist(int dist)
+{
+	simbadDist=dist;
+	conf->setValue("search/simbad_query_dist", simbadDist);
+	emit simbadQueryDistChanged(dist);
+}
+
+void SearchDialog::setSimbadQueryCount(int count)
+{
+	simbadCount=count;
+	conf->setValue("search/simbad_query_count", simbadCount);
+	emit simbadQueryCountChanged(count);
+}
+void SearchDialog::setSimbadGetsIds(bool b)
+{
+	simbadGetIds=b;
+	conf->setValue("search/simbad_query_IDs", b);
+	emit simbadGetsIdsChanged(b);
+}
+
+void SearchDialog::setSimbadGetsSpec(bool b)
+{
+	simbadGetSpec=b;
+	conf->setValue("search/simbad_query_spec", b);
+	emit simbadGetsSpecChanged(b);
+}
+
+void SearchDialog::setSimbadGetsMorpho(bool b)
+{
+	simbadGetMorpho=b;
+	conf->setValue("search/simbad_query_morpho", b);
+	emit simbadGetsMorphoChanged(b);
+}
+
+void SearchDialog::setSimbadGetsTypes(bool b)
+{
+	simbadGetTypes=b;
+	conf->setValue("search/simbad_query_types", b);
+	emit simbadGetsTypesChanged(b);
+}
+
+void SearchDialog::setSimbadGetsDims(bool b)
+{
+	simbadGetDims=b;
+	conf->setValue("search/simbad_query_dimensions", b);
+	emit simbadGetsDimsChanged(b);
 }
 
 void SearchDialog::enableStartOfWordsAutofill(bool enable)
@@ -447,11 +537,19 @@ void SearchDialog::enableLockPosition(bool enable)
 	conf->setValue("search/flag_lock_position", useLockPosition);
 }
 
+void SearchDialog::enableFOVCenterMarker(bool enable)
+{
+	useFOVCenterMarker = enable;
+	fovCenterMarkerState = GETSTELMODULE(SpecialMarkersMgr)->getFlagFOVCenterMarker();
+	conf->setValue("search/flag_fov_center_marker", useFOVCenterMarker);
+}
+
 void SearchDialog::setSimpleStyle()
 {
 	ui->AxisXSpinBox->setVisible(false);
 	ui->AxisXSpinBox->setVisible(false);
 	ui->simbadStatusLabel->setVisible(false);
+	ui->simbadCooStatusLabel->setVisible(false);
 	ui->AxisXLabel->setVisible(false);
 	ui->AxisYLabel->setVisible(false);
 	ui->coordinateSystemLabel->setVisible(false);
@@ -480,7 +578,7 @@ void SearchDialog::manualPositionChanged()
 		case equatorialJ2000:
 		{
 			StelUtils::spheToRect(spinLong, spinLat, pos);
-			if ( (mountMode==StelMovementMgr::MountEquinoxEquatorial) && (fabs(spinLat)> (0.9*M_PI/2.0)) )
+			if ( (mountMode==StelMovementMgr::MountEquinoxEquatorial) && (fabs(spinLat)> (0.9*M_PI_2)) )
 			{
 				// make up vector more stable.
 				// Strictly mount should be in a new J2000 mode, but this here also stabilizes searching J2000 coordinates.
@@ -494,7 +592,7 @@ void SearchDialog::manualPositionChanged()
 			StelUtils::spheToRect(spinLong, spinLat, pos);
 			pos = core->equinoxEquToJ2000(pos, StelCore::RefractionOff);
 
-			if ( (mountMode==StelMovementMgr::MountEquinoxEquatorial) && (fabs(spinLat)> (0.9*M_PI/2.0)) )
+			if ( (mountMode==StelMovementMgr::MountEquinoxEquatorial) && (fabs(spinLat)> (0.9*M_PI_2)) )
 			{
 				// make up vector more stable.
 				mvmgr->setViewUpVector(Vec3d(-cos(spinLong), -sin(spinLong), 0.) * (spinLat>0. ? 1. : -1. ));
@@ -509,9 +607,10 @@ void SearchDialog::manualPositionChanged()
 			if (cx > 2.*M_PI)
 				cx -= 2.*M_PI;
 			StelUtils::spheToRect(cx, spinLat, pos);
-			pos = core->altAzToJ2000(pos);
+			pos = core->altAzToJ2000(pos, StelCore::RefractionOff);
+			core->setTimeRate(0.);
 
-			if ( (mountMode==StelMovementMgr::MountAltAzimuthal) && (fabs(spinLat)> (0.9*M_PI/2.0)) )
+			if ( (mountMode==StelMovementMgr::MountAltAzimuthal) && (fabs(spinLat)> (0.9*M_PI_2)) )
 			{
 				// make up vector more stable.
 				mvmgr->setViewUpVector(Vec3d(-cos(cx), -sin(cx), 0.) * (spinLat>0. ? 1. : -1. ));
@@ -523,7 +622,7 @@ void SearchDialog::manualPositionChanged()
 		{
 			StelUtils::spheToRect(spinLong, spinLat, pos);
 			pos = core->galacticToJ2000(pos);
-			if ( (mountMode==StelMovementMgr::MountGalactic) && (fabs(spinLat)> (0.9*M_PI/2.0)) )
+			if ( (mountMode==StelMovementMgr::MountGalactic) && (fabs(spinLat)> (0.9*M_PI_2)) )
 			{
 				// make up vector more stable.
 				mvmgr->setViewUpVector(Vec3d(-cos(spinLong), -sin(spinLong), 0.) * (spinLat>0. ? 1. : -1. ));
@@ -535,7 +634,7 @@ void SearchDialog::manualPositionChanged()
 		{
 			StelUtils::spheToRect(spinLong, spinLat, pos);
 			pos = core->supergalacticToJ2000(pos);
-			if ( (mountMode==StelMovementMgr::MountSupergalactic) && (fabs(spinLat)> (0.9*M_PI/2.0)) )
+			if ( (mountMode==StelMovementMgr::MountSupergalactic) && (fabs(spinLat)> (0.9*M_PI_2)) )
 			{
 				// make up vector more stable.
 				mvmgr->setViewUpVector(Vec3d(-cos(spinLong), -sin(spinLong), 0.) * (spinLat>0. ? 1. : -1. ));
@@ -566,6 +665,7 @@ void SearchDialog::manualPositionChanged()
 
 void SearchDialog::onSearchTextChanged(const QString& text)
 {
+	clearSimbadText(StelModule::ReplaceSelection);
 	// This block needs to go before the trimmedText.isEmpty() or the SIMBAD result does not
 	// get properly cleared.
 	if (useSimbad) {
@@ -585,6 +685,7 @@ void SearchDialog::onSearchTextChanged(const QString& text)
 		ui->completionLabel->clearValues();
 		ui->completionLabel->selectFirst();
 		ui->simbadStatusLabel->setText("");
+		ui->simbadCooStatusLabel->setText("");
 		ui->pushButtonGotoSearchSkyObject->setEnabled(false);
 	} else {
 		if (useSimbad)
@@ -616,7 +717,7 @@ void SearchDialog::onSearchTextChanged(const QString& text)
 		// objects with short names should be searched first
 		// examples: Moon, Hydra (moon); Jupiter, Ghost of Jupiter
 		stringLengthCompare comparator;
-		qSort(matches.begin(), matches.end(), comparator);
+		std::sort(matches.begin(), matches.end(), comparator);
 
 		ui->completionLabel->setValues(matches);
 		ui->completionLabel->selectFirst();
@@ -626,24 +727,54 @@ void SearchDialog::onSearchTextChanged(const QString& text)
 	}
 }
 
+void SearchDialog::lookupCoordinates()
+{
+	if (!useSimbad)
+		return;
+
+	StelCore * core=StelApp::getInstance().getCore();
+	const QList<StelObjectP>& sel=GETSTELMODULE(StelObjectMgr)->getSelectedObject();
+	if (sel.length()==0)
+		return;
+
+	Vec3d coords=sel.at(0)->getJ2000EquatorialPos(core);
+
+	simbadReply = simbadSearcher->lookupCoords(simbadServerUrl, coords, getSimbadQueryCount(), 500,
+						   getSimbadQueryDist(), getSimbadGetsIds(), getSimbadGetsTypes(),
+						   getSimbadGetsSpec(), getSimbadGetsMorpho(), getSimbadGetsDims());
+	onSimbadStatusChanged();
+	connect(simbadReply, SIGNAL(statusChanged()), this, SLOT(onSimbadStatusChanged()));
+}
+
+void SearchDialog::clearSimbadText(StelModule::StelModuleSelectAction)
+{
+	ui->simbadCooResultsTextBrowser->clear();
+}
 
 // Called when the current simbad query status changes
 void SearchDialog::onSimbadStatusChanged()
 {
 	Q_ASSERT(simbadReply);
+	int index = ui->tabWidget->currentIndex();
+	QString info;
 	if (simbadReply->getCurrentStatus()==SimbadLookupReply::SimbadLookupErrorOccured)
 	{
-		ui->simbadStatusLabel->setText(QString("%1: %2")
-					       .arg(q_("Simbad Lookup Error"))
-					       .arg(simbadReply->getErrorString()));
+		info = QString("%1: %2").arg(q_("Simbad Lookup Error")).arg(simbadReply->getErrorString());
+		if (index==1)
+			ui->simbadCooStatusLabel->setText(info);
+		else
+			ui->simbadStatusLabel->setText(info);
 		if (ui->completionLabel->isEmpty())
 			ui->pushButtonGotoSearchSkyObject->setEnabled(false);
+		ui->simbadCooResultsTextBrowser->clear();
 	}
 	else
 	{
-		ui->simbadStatusLabel->setText(QString("%1: %2")
-					       .arg(q_("Simbad Lookup"))
-					       .arg(simbadReply->getCurrentStatusString()));
+		info = QString("%1: %2").arg(q_("Simbad Lookup")).arg(simbadReply->getCurrentStatusString());
+		if (index==1)
+			ui->simbadCooStatusLabel->setText(info);
+		else
+			ui->simbadStatusLabel->setText(info);
 		// Query not over, don't disable button
 		ui->pushButtonGotoSearchSkyObject->setEnabled(true);
 	}
@@ -654,6 +785,12 @@ void SearchDialog::onSimbadStatusChanged()
 		ui->completionLabel->appendValues(simbadResults.keys());
 		// Update push button enabled state
 		ui->pushButtonGotoSearchSkyObject->setEnabled(!ui->completionLabel->isEmpty());
+	}
+
+	if (simbadReply->getCurrentStatus()==SimbadLookupReply::SimbadCoordinateLookupFinished)
+	{
+		QString ret = simbadReply->getResult();
+		ui->simbadCooResultsTextBrowser->setText(ret);
 	}
 
 	if (simbadReply->getCurrentStatus()!=SimbadLookupReply::SimbadLookupQuerying)
@@ -702,7 +839,7 @@ void SearchDialog::gotoObject(const QString &nameI18n)
 			if (!newSelected.empty())
 			{
 				close();
-				ui->lineEditSearchSkyObject->clear();
+				ui->lineEditSearchSkyObject->setText(""); // https://wiki.qt.io/Technical_FAQ#Why_does_the_memory_keep_increasing_when_repeatedly_pasting_text_and_calling_clear.28.29_in_a_QLineEdit.3F
 				ui->completionLabel->clearValues();
 				// Can't point to home planet
 				if (newSelected[0]->getEnglishName()!=StelApp::getInstance().getCore()->getCurrentLocation().planetName)
@@ -768,7 +905,7 @@ void SearchDialog::gotoObject(const QModelIndex &modelIndex)
 
 void SearchDialog::searchListClear()
 {
-	ui->searchInListLineEdit->clear();	
+	ui->searchInListLineEdit->setText(""); // https://wiki.qt.io/Technical_FAQ#Why_does_the_memory_keep_increasing_when_repeatedly_pasting_text_and_calling_clear.28.29_in_a_QLineEdit.3F
 }
 
 bool SearchDialog::eventFilter(QObject*, QEvent *event)
@@ -799,8 +936,6 @@ bool SearchDialog::eventFilter(QObject*, QEvent *event)
 			extSearchText.clear();
 		}
 	}
-
-
 	return false;
 }
 
@@ -810,7 +945,11 @@ QString SearchDialog::substituteGreek(const QString& keyString)
 		return getGreekLetterByName(keyString);
 	else
 	{
+		#if (QT_VERSION>=QT_VERSION_CHECK(5, 14, 0))
+		QStringList nameComponents = keyString.split(" ", Qt::SkipEmptyParts);
+		#else
 		QStringList nameComponents = keyString.split(" ", QString::SkipEmptyParts);
+		#endif
 		if(!nameComponents.empty())
 			nameComponents[0] = getGreekLetterByName(nameComponents[0]);
 		return nameComponents.join(" ");
@@ -871,7 +1010,7 @@ void SearchDialog::updateListView(int index)
 {
 	QString moduleId = ui->objectTypeComboBox->itemData(index).toString();
 	bool englishNames = ui->searchInEnglishCheckBox->isChecked();
-	ui->searchInListLineEdit->clear();
+	ui->searchInListLineEdit->setText(""); // https://wiki.qt.io/Technical_FAQ#Why_does_the_memory_keep_increasing_when_repeatedly_pasting_text_and_calling_clear.28.29_in_a_QLineEdit.3F
 	ui->objectsListView->blockSignals(true);
 	ui->objectsListView->reset();
 	listModel->setStringList(objectMgr->listAllModuleObjects(moduleId, englishNames));
@@ -942,7 +1081,8 @@ void SearchDialog::showContextMenu(const QPoint &pt)
 
 void SearchDialog::pasteAndGo()
 {
-	ui->lineEditSearchSkyObject->clear(); // clear current text
+	// https://wiki.qt.io/Technical_FAQ#Why_does_the_memory_keep_increasing_when_repeatedly_pasting_text_and_calling_clear.28.29_in_a_QLineEdit.3F
+	ui->lineEditSearchSkyObject->setText(""); // clear current text
 	ui->lineEditSearchSkyObject->paste(); // paste text from clipboard
 	gotoObject(); // go to first finded object
 }
