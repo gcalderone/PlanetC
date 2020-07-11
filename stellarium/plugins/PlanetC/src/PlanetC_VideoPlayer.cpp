@@ -124,7 +124,7 @@ void PlanetC_VideoPlayer::setVolume(float vol)
 #ifdef ENABLE_QTAV
     audio()->setVolume(vol);
 #else
-    QMediaPlayer::setVolume(vol);
+    QMediaPlayer::setVolume(100 * vol);
     player2->setVolume(0.);
 #endif
 }
@@ -150,7 +150,7 @@ void PlanetC_VideoPlayer::handlePosChange(qint64 timepos)
  
     float scale2W = (scale * maxW) / videoSize.width();
     float scale2H = (scale * maxH) / videoSize.height();
-    float scale2 = (scale2W < scale2H  ?  scale2H  :  scale2W);
+    float scale2 = (scale2W < scale2H  ?  scale2W  :  scale2H);
 
     int finalW = videoSize.width()  * scale2;
     int finalH = videoSize.height() * scale2;

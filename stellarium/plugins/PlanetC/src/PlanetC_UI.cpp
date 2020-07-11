@@ -501,6 +501,8 @@ PlanetC_UI::PlanetC_UI(PlanetC* planetc) : QMainWindow(), glWidget(NULL), timer(
     StelApp& app = StelApp::getInstance();
     if (app.getViewportEffect() != "sphericMirrorDistorter")
         app.setViewportEffect("sphericMirrorDistorter");
+
+	move(QGuiApplication::primaryScreen()->geometry().topLeft());
 }
 
 
@@ -720,7 +722,7 @@ void PlanetC_UI::updateFromTimer()
     if (firstUpdate) {
         setFullScreen(false);
         firstUpdate = false;
-    }
+	}
 
     //Set scroll areas to show the whole horizontal size of their
     //contents

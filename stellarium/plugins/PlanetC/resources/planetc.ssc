@@ -1,7 +1,7 @@
 //
 //  Planetarium control (PlanetC) plug-in for Stellarium
 //
-//  Copyright (C) 2016 Giorgio Calderone
+//  Copyright (C) 2016-2020 Giorgio Calderone
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public icense
@@ -52,10 +52,10 @@ function planetc_AutoZoomIn(timeMove, timeZoom)
     if (obj["AllInfo"].indexOf("Type: <b>comet</b>") > -1) { fov = 20; }
 
     core.setTimeRate(0);
+	StelMovementMgr.setFlagTracking(true);
     core.moveToObject(timeMove);
     StelMovementMgr.zoomTo(fov, timeZoom);
     core.wait( Math.max(timeMove, timeZoom) );
-    StelMovementMgr.setFlagTracking(true);
     StelMovementMgr.setEquatorialMount(true);
 }
 
@@ -73,10 +73,9 @@ function planetc_AutoZoomOut(timeMove, timeZoom)
         planetc_autozoom.azi = 180;
         planetc_autozoom.fov = 180;
     }
-    else
-        StelMovementMgr.setEquatorialMount(false);
 
     core.setTimeRate(0);
+    StelMovementMgr.setFlagTracking(false);
     core.setDate(planetc_autozoom.utcdate, "utc");
 
     StelMovementMgr.zoomTo(planetc_autozoom.fov, timeZoom);
@@ -84,7 +83,6 @@ function planetc_AutoZoomOut(timeMove, timeZoom)
         core.wait(0.05);
         timeZoom -= 0.05;
     }
-    StelMovementMgr.setFlagTracking(false);
     core.moveToAltAzi(planetc_autozoom.alt, planetc_autozoom.azi, timeMove);
     core.wait( Math.max(timeMove, timeZoom) );
     StelMovementMgr.setEquatorialMount(false);

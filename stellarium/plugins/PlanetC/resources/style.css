@@ -94,11 +94,11 @@ QPushButton:flat {
 QPushButton#closeStelWindow {
     border: 0px;
     background: none;
-    background-image: url(:/graphicGui/closeButton.png);
+    background-image: url(:/graphicGui/uieCloseButton.png);
 }
 
 QPushButton:hover#closeStelWindow {
-    background-image: url(:/graphicGui/closeButton-hover.png);
+    background-image: url(:/graphicGui/uieCloseButton-hover.png);
 }
 
 
