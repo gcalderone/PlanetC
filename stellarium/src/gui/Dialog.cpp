@@ -42,7 +42,7 @@ void BarFrame::mouseMoveEvent(QMouseEvent *event)
 	//PLANETC_GC QWidget* p = dynamic_cast<QWidget*>(QFrame::parent());
 	QPoint targetPos = p->pos() + dpos;
 	
-	if (p == parent()) { 
+	if (p == parent()) { //PLANETC_GC
 	// Prevent the title bar from being dragged to an unreachable position.
 	QWidget& mainWindow = StelMainView::getInstance();
 	int leftBoundX = 10 - width();
