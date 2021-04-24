@@ -942,7 +942,7 @@ void PlanetC_UI::setFullScreen(bool b)
         {
             move(screen1->geometry().topLeft());
             QThread::msleep(500);
-            showFullScreen();
+            //showFullScreen();  Disabled to have the title bar always available.
         }
     else
         {
