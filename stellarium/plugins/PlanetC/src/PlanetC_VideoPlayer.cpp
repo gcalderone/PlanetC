@@ -88,10 +88,10 @@ void PlanetC_VideoPlayer::openFile(const QString& filename, bool twin)
 #else
     //video->setVisible(false);
     setMedia(QUrl::fromLocalFile(filename));
-    pause();
+    //pause();
     if (twin) {
 	player2->setMedia(QUrl::fromLocalFile(filename));
-	player2->pause();
+		//player2->pause();
     }
 #endif
 }
@@ -99,6 +99,7 @@ void PlanetC_VideoPlayer::openFile(const QString& filename, bool twin)
 void PlanetC_VideoPlayer::close()
 {
     stop();
+    setMedia(QMediaContent());
 #ifndef ENABLE_QTAV
     player2->stop();
     setMedia(QMediaContent());

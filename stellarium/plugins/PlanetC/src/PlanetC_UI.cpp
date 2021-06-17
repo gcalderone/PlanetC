@@ -887,32 +887,11 @@ void PlanetC_UI::updateFromTimer()
 
 void PlanetC_UI::setFullScreen(bool b)
 {
-    /*
       qDebug() << "Number of screens:" << QGuiApplication::screens().size();
       qDebug() << "Primary screen:" << QGuiApplication::primaryScreen()->name();
       foreach (QScreen *screen, QGuiApplication::screens()) {
-      qDebug() << "Information for screen:" << screen->name();
-      qDebug() << "  Available geometry:" << screen->availableGeometry().x() << screen->availableGeometry().y() << screen->availableGeometry().width() << "x" << screen->availableGeometry().height();
-      qDebug() << "  Available size:" << screen->availableSize().width() << "x" << screen->availableSize().height();
-      qDebug() << "  Available virtual geometry:" << screen->availableVirtualGeometry().x() << screen->availableVirtualGeometry().y() << screen->availableVirtualGeometry().width() << "x" << screen->availableVirtualGeometry().height();
-      qDebug() << "  Available virtual size:" << screen->availableVirtualSize().width() << "x" << screen->availableVirtualSize().height();
-      qDebug() << "  Depth:" << screen->depth() << "bits";
-      qDebug() << "  Geometry:" << screen->geometry().x() << screen->geometry().y() << screen->geometry().width() << "x" << screen->geometry().height();
-      qDebug() << "  Logical DPI:" << screen->logicalDotsPerInch();
-      qDebug() << "  Logical DPI X:" << screen->logicalDotsPerInchX();
-      qDebug() << "  Logical DPI Y:" << screen->logicalDotsPerInchY();
-      qDebug() << "  Orientation:" << screen->orientation();
-      qDebug() << "  Physical DPI:" << screen->physicalDotsPerInch();
-      qDebug() << "  Physical DPI X:" << screen->physicalDotsPerInchX();
-      qDebug() << "  Physical DPI Y:" << screen->physicalDotsPerInchY();
-      qDebug() << "  Physical size:" << screen->physicalSize().width() << "x" << screen->physicalSize().height() << "mm";
-      qDebug() << "  Primary orientation:" << screen->primaryOrientation();
-      qDebug() << "  Refresh rate:" << screen->refreshRate() << "Hz";
-      qDebug() << "  Size:" << screen->size().width() << "x" << screen->size().height();
-      qDebug() << "  Virtual geometry:" << screen->virtualGeometry().x() << screen->virtualGeometry().y() << screen->virtualGeometry().width() << "x" << screen->virtualGeometry().height();
-      qDebug() << "  Virtual size:" << screen->virtualSize().width() << "x" << screen->virtualSize().height();
+		qDebug() << "Screen:" << screen->name() << " : " << screen->geometry().x() << screen->geometry().y() << screen->size().width() << "x" << screen->size().height();
       }
-    */
 
     int nScreens = QGuiApplication::screens().size();
     QScreen* screen1 = NULL;
@@ -934,6 +913,8 @@ void PlanetC_UI::setFullScreen(bool b)
             screen1 = screen;
         else
             screen2 = screen;
+	qDebug() << "Screen 1 " << screen1;
+	qDebug() << "Screen 2 " << screen2;
     if (!screen1) return;
     if ((b)  &&  (!screen2)) return;
 
@@ -956,14 +937,26 @@ void PlanetC_UI::setFullScreen(bool b)
         {
             if(pOpt->getExtProjFullscreen())
                 {
+                    stel.view->setFullScreen(false);
+                    stel.view->resize(QSize(640, 480));
+					qDebug() << "Moving stellarium window to: " << screen2->geometry().topLeft();
                     stel.view->move(screen2->geometry().topLeft());
+#ifdef Q_OS_WIN
+					/*
+					  Problem on windows: the window is properly moved
+					  to secondary screen, but when showing in full
+					  screen it goes back to primary screen
+
+					  search google: qt5 showfullscreen brings window to primary screen
+					 */
+                    stel.view->windowHandle()->setScreen(screen2);
+#endif
                     QThread::msleep(500);
-                    stel.view->setFullScreen(true);
+                    stel.view->showFullScreen();
                 }
             else
                 {
                     stel.view->setFullScreen(false);
-
                     QThread::msleep(500);
                     QRect rect(screen2->geometry().topLeft() +
                                QPoint(pOpt->getExtProj_X(), pOpt->getExtProj_Y()),
